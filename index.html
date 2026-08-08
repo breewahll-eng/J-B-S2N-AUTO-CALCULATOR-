@@ -156,6 +156,10 @@
       <span>ABM Broker Fee:</span>
       <span id="brokerFeeDisplay">$0</span>
     </div>
+    <div class="result-row">
+      <span>Calculated Total Outlay:</span>
+      <span id="calcTotalOutlay">$0</span>
+    </div>
     <div class="result-row total">
       <span>Max Allowable Bid:</span>
       <span id="maxBid">$0</span>
@@ -187,18 +191,12 @@ function updateMaxOutlay() {
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
 
-  // Auto-calculate the outlay budget based on the top inputs
   const calculatedOutlay = resale - profit - repairs - freight;
-  
-  // Push the calculated number into the new input field
   document.getElementById('maxOutlayInput').value = calculatedOutlay;
-  
-  // Trigger the final bid calculation
   calculateFromOutlay();
 }
 
 function calculateFromOutlay() {
-  // Pull the budget directly from the new input field so it can be manually overridden
   const maxOutlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
   const membership = document.getElementById('membership').value;
@@ -206,8 +204,10 @@ function calculateFromOutlay() {
   let bestBid = 0;
   let bestAuctionFees = 0;
   let bestBrokerFee = 0;
+  let bestTotal = 0;
 
-  for (let testBid = 100; testBid <= 30000; testBid += 50) {
+  // Single dollar stepping loop eliminates rounding gaps
+  for (let testBid = 100; testBid <= 30000; testBid += 1) {
     let aFees = getAuctionFees(testBid);
     let bFee = 0;
     
@@ -223,6 +223,7 @@ function calculateFromOutlay() {
       bestBid = testBid;
       bestAuctionFees = aFees;
       bestBrokerFee = bFee;
+      bestTotal = totalCost;
     } else {
       break; 
     }
@@ -230,10 +231,10 @@ function calculateFromOutlay() {
 
   document.getElementById('estAuctionFees').innerText = '$' + bestAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('brokerFeeDisplay').innerText = '$' + bestBrokerFee.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('calcTotalOutlay').innerText = '$' + bestTotal.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('maxBid').innerText = '$' + bestBid.toLocaleString(undefined, {maximumFractionDigits: 0});
 }
 
-// Initial boot sequence
 updateMaxOutlay();
 </script>
 
