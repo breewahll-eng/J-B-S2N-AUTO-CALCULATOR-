@@ -58,6 +58,199 @@
     border-radius: 6px;
     box-sizing: border-box;
   }
+  input:focus, select:focus {
+    border-color: var(--primary);
+    outline: none;
+  }
+  .results-box {
+    background: #000;
+    border: 1px solid var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .result-row.total {
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 18px;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    background: var(--primary);
+    color: #000;
+    padding: 14px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>J & B Autos Matrix</h2>
+  
+  <div class="input-group">
+    <label>ABM Membership Level</label>
+    <select id="membership" onchange="calculate()">
+      <option value="advanced">Advanced ($189/yr) - $349 or 5% Fee</option>
+      <option value="premium">Premium ($349/yr) - $150 or 4% Fee</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label>Target Resale Price (WI)</label>
+    <input type="number" id="resale" value="6500" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Desired Profit Margin ($)</label>
+    <input type="number" id="profit" value="2000" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Estimated Repairs & Parts</label>
+    <input type="number" id="repairs" value="800" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Freight / Hauler Cost</label>
+    <input type="number" id="freight" value="600" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Processing Fee (Fixed)</label>
+    <input type="number" id="processingFee" value="150" oninput="calculate()">
+  </div>
+
+  <div class="results-box">
+    <div class="result-row">
+      <span>Max Total Outlay Allowed:</span>
+      <span id="maxOutlay">$0</span>
+    </div>
+    <div class="result-row">
+      <span>Est. Copart Auction Fees:</span>
+      <span id="estAuctionFees">$0</span>
+    </div>
+    <div class="result-row">
+      <span>ABM Broker Fee:</span>
+      <span id="brokerFeeDisplay">$0</span>
+    </div>
+    <div class="result-row total">
+      <span>Max Allowable Bid:</span>
+      <span id="maxBid">$0</span>
+    </div>
+  </div>
+
+  <button class="btn" onclick="window.location.reload()">Reset Matrix</button>
+</div>
+
+<script>
+// Hardcoded fee brackets exactly mirroring AutoBidMaster dynamic data
+function getAuctionFees(bid) {
+  if (bid <= 1500) return 628;
+  if (bid <= 1800) return 678;
+  if (bid <= 2500) return 718; // Corrected: Captures the $2,000 and $2,200 data points
+  if (bid <= 3450) return 848; // Captures $3,000 and $3,450
+  if (bid <= 3950) return 923; // Captures $3,500 and $3,950
+  if (bid <= 4000) return 968;
+  if (bid <= 4500) return 1003;
+  if (bid <= 5000) return 1008;
+  if (bid <= 7000) return 1338;
+  if (bid <= 10000) return 1798;
+  if (bid <= 20000) return 3298;
+  return 3298; // Baseline for > $20,000
+}
+
+function calculate() {
+  const resale = parseFloat(document.getElementById('resale').value) || 0;
+  const profit = parseFloat(document.getElementById('profit').value) || 0;
+  const repairs = parseFloat(document.getElementById('repairs').value) || 0;
+  const freight = parseFloat(document.getElementById('freight').value) || 0;
+  const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
+  const membership = document.getElementById('membership').value;
+
+  // Total cash pool we have to work with after protecting margin and hard costs
+  const maxOutlay = resale - profit - repairs - freight;
+  
+  let bestBid = 0;
+  let bestAuctionFees = 0;
+  let bestBrokerFee = 0;
+
+  // Iterative stress test to find the absolute highest bid possible without breaking maxOutlay
+  for (let testBid = 100; testBid <= 30000; testBid += 50) {
+    let aFees = getAuctionFees(testBid);
+    let bFee = 0;
+    
+    // ABM Transaction fee routing based on membership toggle
+    if (membership === 'advanced') {
+      bFee = Math.max(349, testBid * 0.05);
+    } else {
+      bFee = Math.max(150, testBid * 0.04);
+    }
+    
+    let totalCost = testBid + aFees + bFee + processingFee;
+    
+    if (totalCost <= maxOutlay) {
+      bestBid = testBid;
+      bestAuctionFees = aFees;
+      bestBrokerFee = bFee;
+    } else {
+      break; // Stop climbing once the total cost breaches our allowable outlay
+    }
+  }
+
+  // Update UI with calculated values
+  document.getElementById('maxOutlay').innerText = '$' + maxOutlay.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('estAuctionFees').innerText = '$' + bestAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('brokerFeeDisplay').innerText = '$' + bestBrokerFee.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('maxBid').innerText = '$' + bestBid.toLocaleString(undefined, {maximumFractionDigits: 0});
+}
+
+// Initial calculation on load
+calculate();
+</script>
+
+</body>
+</html>
+    font-size: 20px;
+    margin-top: 0;
+    letter-spacing: 1px;
+  }
+  .input-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px;
+    background: #000;
+    border: 1px solid var(--border);
+    color: #fff;
+    font-size: 16px;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
   input:focus {
     border-color: var(--primary);
     outline: none;
