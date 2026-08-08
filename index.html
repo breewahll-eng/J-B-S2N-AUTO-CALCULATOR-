@@ -62,17 +62,24 @@
     border-color: var(--primary);
     outline: none;
   }
+  .highlight-input {
+    background: rgba(0, 255, 204, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px dashed var(--primary);
+    margin-bottom: 20px;
+  }
   .highlight-input input {
     border: 1px solid var(--primary);
     color: var(--primary);
     font-weight: bold;
+    font-size: 18px;
   }
   .results-box {
     background: #000;
     border: 1px solid var(--primary);
     padding: 15px;
     border-radius: 8px;
-    margin-top: 20px;
   }
   .result-row {
     display: flex;
@@ -119,32 +126,32 @@
 
   <div class="input-group">
     <label>Target Resale Price (WI)</label>
-    <input type="number" id="resale" value="6500" oninput="updateMaxOutlay()">
+    <input type="number" id="resale" value="6500" oninput="updateMaxOutlay()" onkeyup="updateMaxOutlay()" onchange="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Desired Profit Margin ($)</label>
-    <input type="number" id="profit" value="2000" oninput="updateMaxOutlay()">
+    <input type="number" id="profit" value="2000" oninput="updateMaxOutlay()" onkeyup="updateMaxOutlay()" onchange="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Estimated Repairs & Parts</label>
-    <input type="number" id="repairs" value="800" oninput="updateMaxOutlay()">
+    <input type="number" id="repairs" value="800" oninput="updateMaxOutlay()" onkeyup="updateMaxOutlay()" onchange="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Freight / Hauler Cost</label>
-    <input type="number" id="freight" value="600" oninput="updateMaxOutlay()">
+    <input type="number" id="freight" value="600" oninput="updateMaxOutlay()" onkeyup="updateMaxOutlay()" onchange="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Processing Fee (Fixed)</label>
-    <input type="number" id="processingFee" value="150" oninput="calculateFromOutlay()">
+    <input type="number" id="processingFee" value="150" oninput="calculateFromOutlay()" onkeyup="calculateFromOutlay()">
   </div>
 
-  <div class="input-group highlight-input">
-    <label>Max Total Outlay Allowed ($)</label>
-    <input type="number" id="maxOutlayInput" value="0" oninput="calculateFromOutlay()">
+  <div class="highlight-input">
+    <label>Max Outlay (Auto-Calculated or Manual Override)</label>
+    <input type="number" id="maxOutlayInput" value="0" oninput="calculateFromOutlay()" onkeyup="calculateFromOutlay()">
   </div>
 
   <div class="results-box">
@@ -157,7 +164,7 @@
       <span id="brokerFeeDisplay">$0</span>
     </div>
     <div class="result-row">
-      <span>Calculated Total Outlay:</span>
+      <span>Verified Total Landed Cost:</span>
       <span id="calcTotalOutlay">$0</span>
     </div>
     <div class="result-row total">
@@ -191,8 +198,11 @@ function updateMaxOutlay() {
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
 
+  // Push absolute real-time top numbers down to the Outlay Box
   const calculatedOutlay = resale - profit - repairs - freight;
   document.getElementById('maxOutlayInput').value = calculatedOutlay;
+  
+  // Fire the engine
   calculateFromOutlay();
 }
 
@@ -206,7 +216,7 @@ function calculateFromOutlay() {
   let bestBrokerFee = 0;
   let bestTotal = 0;
 
-  // Single dollar stepping loop eliminates rounding gaps
+  // Single dollar stepping loop to eliminate gaps
   for (let testBid = 100; testBid <= 30000; testBid += 1) {
     let aFees = getAuctionFees(testBid);
     let bFee = 0;
@@ -229,12 +239,14 @@ function calculateFromOutlay() {
     }
   }
 
+  // Update UI Elements
   document.getElementById('estAuctionFees').innerText = '$' + bestAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('brokerFeeDisplay').innerText = '$' + bestBrokerFee.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('calcTotalOutlay').innerText = '$' + bestTotal.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('maxBid').innerText = '$' + bestBid.toLocaleString(undefined, {maximumFractionDigits: 0});
 }
 
+// System Boot
 updateMaxOutlay();
 </script>
 
