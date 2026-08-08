@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J & B Autos Matrix</title>
+<style>
+  /* J & B Autos Automotive Dark Theme */
+  body { 
+    background-color: #0a0a0a; 
+    color: #e0e0e0; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; 
+    padding: 15px; 
+    background-image: radial-gradient(circle at top, #1f2022, #0a0a0a);
+    min-height: 100vh;
+  }
+  .container { 
+    max-width: 480px; 
+    margin: 0 auto; 
+    background: #151515; 
+    padding: 20px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    border: 1px solid #333; 
+  }
+  h1 { 
+    text-align: center; 
+    color: #00ffcc; 
+    text-transform: uppercase; 
+    font-size: 20px; 
+    letter-spacing: 2px; 
+    margin-top: 0;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+  }
+  .max-bid-display { 
+    background: #000; 
+    padding: 20px; 
+    border-radius: 8px; 
+    text-align: center; 
+    margin-bottom: 25px; 
+    border: 2px solid #00ffcc; 
+    box-shadow: inset 0 0 15px rgba(0,255,204,0.15), 0 0 10px rgba(0,255,204,0.1); 
+  }
+  .max-bid-display h2 { 
+    margin: 0; 
+    font-size: 14px; 
+    color: #888; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .max-bid-display .amount { 
+    font-size: 42px; 
+    font-weight: 800; 
+    color: #00ffcc; 
+    margin-top: 5px; 
+    text-shadow: 0 0 10px rgba(0,255,204,0.4);
+  }
+  .input-group { margin-bottom: 18px; }
+  label { 
+    display: block; 
+    margin-bottom: 6px; 
+    font-size: 13px; 
+    color: #aaa; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  input, select { 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 6px; 
+    border: 1px solid #444; 
+    background: #000; 
+    color: #fff; 
+    font-size: 16px; 
+    box-sizing: border-box; 
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #00ffcc;
+  }
+  .receipt { 
+    margin-top: 25px; 
+    padding: 15px; 
+    background: #0a0a0a; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    color: #aaa;
+    border: 1px solid #222;
+  }
+  .receipt-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 10px; 
+  }
+  .receipt-total { 
+    border-top: 1px dashed #444; 
+    padding-top: 10px; 
+    margin-top: 10px;
+    font-weight: bold; 
+    color: #fff; 
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>J & B Autos Matrix</h1>
+  
+  <div class="max-bid-display">
+    <h2>Maximum Allowable Bid</h2>
+    <div class="amount" id="maxBidOut">$0</div>
+  </div>
+
+  <div class="input-group">
+    <label>Auction Platform</label>
+    <select id="platform">
+      <option value="abm">AutoBidMaster (Advanced)</option>
+      <option value="copart">Copart (Public)</option>
+    </select>
+  </div>
+  <div class="input-group">
+    <label>Target Resale Price ($)</label>
+    <input type="number" id="resale" value="8500" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>Desired Profit Margin ($)</label>
+    <input type="number" id="profit" value="2000" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>Freight Cost ($)</label>
+    <input type="number" id="freight" value="800" inputmode="numeric">
+  </div>
+  <div class="input-group">
+    <label>Estimated Repairs ($)</label>
+    <input type="number" id="repairs" value="500" inputmode="numeric">
+  </div>
+
+  <div class="receipt" id="receiptBox">
+    <!-- Populated by JavaScript -->
+  </div>
+</div>
+
+<script>
+  const inputs = ['platform', 'resale', 'profit', 'freight', 'repairs'];
+  inputs.forEach(id => document.getElementById(id).addEventListener('input', calculateMatrix));
+
+  function calculateMatrix() {
+    const platform = document.getElementById('platform').value;
+    const resale = parseFloat(document.getElementById('resale').value) || 0;
+    const profit = parseFloat(document.getElementById('profit').value) || 0;
+    const freight = parseFloat(document.getElementById('freight').value) || 0;
+    const repairs = parseFloat(document.getElementById('repairs').value) || 0;
+
+    // The hard ceiling for what you can spend at the auction house
+    const targetSpend = resale - profit - freight - repairs;
+
+    let maxBid = 0;
+    let feeTransaction = 0;
+    let feeGate = 95;
+    let feeVirtual = 50;
+    let feeEnv = 0;
+
+    if (targetSpend <= 0) {
+        renderReceipt(0, 0, 0, 0, 0, targetSpend);
+        return;
+    }
+
+    if (platform === 'abm') {
+        feeEnv = 35; // Title/Env fees
+        const fixedFees = feeGate + feeVirtual + feeEnv; 
+        
+        // ABM Math: $299 flat OR 5% (whichever is greater)
+        // $5980 * 0.05 = $299. Target spend threshold = 5980 + 299 + 180 = 6459
+        if (targetSpend <= 6459) {
+            feeTransaction = 299;
+            maxBid = targetSpend - feeTransaction - fixedFees;
+        } else {
+            maxBid = (targetSpend - fixedFees) / 1.05;
+            feeTransaction = maxBid * 0.05;
+        }
+    } else {
+        // Copart Public Math (Calculated at ~18.5% escalating fee scale + fixed)
+        feeEnv = 0; 
+        const fixedFees = feeGate + feeVirtual; 
+        maxBid = (targetSpend - fixedFees) / 1.185;
+        feeTransaction = maxBid * 0.185;
+    }
+
+    if (maxBid < 0) maxBid = 0;
+    renderReceipt(maxBid, feeTransaction, feeGate, feeVirtual, feeEnv, targetSpend);
+  }
+
+  function renderReceipt(bid, transaction, gate, virtual, env, spend) {
+    document.getElementById('maxBidOut').innerText = '$' + Math.floor(bid).toLocaleString();
+    
+    const rBox = document.getElementById('receiptBox');
+    if (bid <= 0) {
+        rBox.innerHTML = '<div style="color:#ff4444; text-align:center; font-weight:bold;">MARGIN NEGATIVE: Adjust targets or walk away.</div>';
+        return;
+    }
+
+    rBox.innerHTML = `
+      <div class="receipt-row"><span>Hammer Bid:</span> <span>$${Math.floor(bid).toLocaleString()}</span></div>
+      <div class="receipt-row"><span>Broker / Buyer Fee:</span> <span>$${Math.floor(transaction).toLocaleString()}</span></div>
+      <div class="receipt-row"><span>Gate Fee:</span> <span>$${gate}</span></div>
+      <div class="receipt-row"><span>Virtual Bid Fee:</span> <span>$${virtual}</span></div>
+      ${env > 0 ? `<div class="receipt-row"><span>Env / Title Fee:</span> <span>$${env}</span></div>` : ''}
+      <div class="receipt-row receipt-total"><span>Total Landed Auction Cost:</span> <span>$${Math.floor(spend).toLocaleString()}</span></div>
+    `;
+  }
+
+  // Initialize on load
+  calculateMatrix();
+</script>
+</body>
+</html>
