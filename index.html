@@ -62,6 +62,11 @@
     border-color: var(--primary);
     outline: none;
   }
+  .highlight-input input {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    font-weight: bold;
+  }
   .results-box {
     background: #000;
     border: 1px solid var(--primary);
@@ -106,7 +111,7 @@
   
   <div class="input-group">
     <label>ABM Membership Level</label>
-    <select id="membership" onchange="calculate()">
+    <select id="membership" onchange="calculateFromOutlay()">
       <option value="advanced">Advanced ($189/yr) - $349 or 5% Fee</option>
       <option value="premium">Premium ($349/yr) - $150 or 4% Fee</option>
     </select>
@@ -114,34 +119,35 @@
 
   <div class="input-group">
     <label>Target Resale Price (WI)</label>
-    <input type="number" id="resale" value="6500" oninput="calculate()">
+    <input type="number" id="resale" value="6500" oninput="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Desired Profit Margin ($)</label>
-    <input type="number" id="profit" value="2000" oninput="calculate()">
+    <input type="number" id="profit" value="2000" oninput="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Estimated Repairs & Parts</label>
-    <input type="number" id="repairs" value="800" oninput="calculate()">
+    <input type="number" id="repairs" value="800" oninput="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Freight / Hauler Cost</label>
-    <input type="number" id="freight" value="600" oninput="calculate()">
+    <input type="number" id="freight" value="600" oninput="updateMaxOutlay()">
   </div>
 
   <div class="input-group">
     <label>Processing Fee (Fixed)</label>
-    <input type="number" id="processingFee" value="150" oninput="calculate()">
+    <input type="number" id="processingFee" value="150" oninput="calculateFromOutlay()">
+  </div>
+
+  <div class="input-group highlight-input">
+    <label>Max Total Outlay Allowed ($)</label>
+    <input type="number" id="maxOutlayInput" value="0" oninput="calculateFromOutlay()">
   </div>
 
   <div class="results-box">
-    <div class="result-row">
-      <span>Max Total Outlay Allowed:</span>
-      <span id="maxOutlay">$0</span>
-    </div>
     <div class="result-row">
       <span>Est. Copart Auction Fees:</span>
       <span id="estAuctionFees">$0</span>
@@ -175,15 +181,27 @@ function getAuctionFees(bid) {
   return 3298; 
 }
 
-function calculate() {
+function updateMaxOutlay() {
   const resale = parseFloat(document.getElementById('resale').value) || 0;
   const profit = parseFloat(document.getElementById('profit').value) || 0;
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
+
+  // Auto-calculate the outlay budget based on the top inputs
+  const calculatedOutlay = resale - profit - repairs - freight;
+  
+  // Push the calculated number into the new input field
+  document.getElementById('maxOutlayInput').value = calculatedOutlay;
+  
+  // Trigger the final bid calculation
+  calculateFromOutlay();
+}
+
+function calculateFromOutlay() {
+  // Pull the budget directly from the new input field so it can be manually overridden
+  const maxOutlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
   const membership = document.getElementById('membership').value;
-
-  const maxOutlay = resale - profit - repairs - freight;
   
   let bestBid = 0;
   let bestAuctionFees = 0;
@@ -210,13 +228,13 @@ function calculate() {
     }
   }
 
-  document.getElementById('maxOutlay').innerText = '$' + maxOutlay.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('estAuctionFees').innerText = '$' + bestAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('brokerFeeDisplay').innerText = '$' + bestBrokerFee.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('maxBid').innerText = '$' + bestBid.toLocaleString(undefined, {maximumFractionDigits: 0});
 }
 
-calculate();
+// Initial boot sequence
+updateMaxOutlay();
 </script>
 
 </body>
