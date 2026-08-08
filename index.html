@@ -4,36 +4,195 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>J & B Autos Matrix</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
-
 <style>
-  /* J & B Autos Automotive Dark Theme */
-  body { 
-    background-color: #0a0a0a; 
-    color: #e0e0e0; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    margin: 0; 
-    padding: 15px; 
-    background-image: radial-gradient(circle at top, #1f2022, #0a0a0a);
-    min-height: 100vh;
+  :root {
+    --primary: #00ffcc;
+    --dark: #0a0a0a;
+    --panel: #151515;
+    --text: #e0e0e0;
+    --border: #333;
   }
-  .container { 
-    max-width: 480px; 
-    margin: 0 auto; 
-    background: #151515; 
-    padding: 20px; 
-    border-radius: 12px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-    border: 1px solid #333; 
+  body {
+    background-color: var(--dark);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 10px;
   }
-  h1 { 
-    text-align: center; 
-    color: #00ffcc; 
-    text-transform: uppercase; 
-    font-size: 20px; 
-    letter-spacing: 2px; 
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+  }
+  h2 {
+    color: var(--primary);
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 20px;
     margin-top: 0;
+    letter-spacing: 1px;
+  }
+  .input-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px;
+    background: #000;
+    border: 1px solid var(--border);
+    color: #fff;
+    font-size: 16px;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  input:focus {
+    border-color: var(--primary);
+    outline: none;
+  }
+  .results-box {
+    background: #000;
+    border: 1px solid var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .result-row.total {
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 18px;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    background: var(--primary);
+    color: #000;
+    padding: 14px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>J & B Autos Matrix</h2>
+  
+  <div class="input-group">
+    <label>Target Resale Price (WI)</label>
+    <input type="number" id="resale" value="6500" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Desired Profit Margin ($)</label>
+    <input type="number" id="profit" value="2000" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Estimated Repairs & Parts</label>
+    <input type="number" id="repairs" value="800" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Freight / Hauler Cost</label>
+    <input type="number" id="freight" value="600" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>Processing Fee (Fixed ABM)</label>
+    <input type="number" id="processingFee" value="150" oninput="calculate()">
+  </div>
+
+  <div class="input-group">
+    <label>ABM Broker Transaction Fee</label>
+    <input type="number" id="brokerFee" value="349" oninput="calculate()">
+  </div>
+
+  <div class="results-box">
+    <div class="result-row">
+      <span>Max Total All-In Outlay:</span>
+      <span id="maxOutlay">$3,100</span>
+    </div>
+    <div class="result-row">
+      <span>Est. Auction/Gate Fees:</span>
+      <span id="estAuctionFees">$678</span>
+    </div>
+    <div class="result-row total">
+      <span>Max Allowable Bid:</span>
+      <span id="maxBid">$1,800</span>
+    </div>
+  </div>
+
+  <button class="btn" onclick="window.location.reload()">Reset Matrix</button>
+</div>
+
+<script>
+function calculate() {
+  const resale = parseFloat(document.getElementById('resale').value) || 0;
+  const profit = parseFloat(document.getElementById('profit').value) || 0;
+  const repairs = parseFloat(document.getElementById('repairs').value) || 0;
+  const freight = parseFloat(document.getElementById('freight').value) || 0;
+  const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
+  const brokerFee = parseFloat(document.getElementById('brokerFee').value) || 0;
+
+  // Working backward from Target Resale to find max total cash outlay allowed
+  const maxOutlay = resale - profit - repairs - freight;
+  
+  // Backing out fixed ABM and processing fees to find what's left for Bid + Auction Fees
+  const poolForBidAndAuction = maxOutlay - processingFee - brokerFee;
+
+  // Approximate reverse engineering of Copart/ABM tiered auction fees based on empirical data
+  // Using a dynamic approximation where auction fees scale roughly with the bid amount
+  let estimatedBid = poolForBidAndAuction / 1.35; // rough baseline ratio for fee scaling
+  if (estimatedBid < 0) estimatedBid = 0;
+
+  // Refine auction fee estimation based on bracket behavior
+  let estAuctionFees = 678;
+  if (estimatedBid > 2000) {
+    estAuctionFees = 718;
+  } else if (estimatedBid < 1500) {
+    estAuctionFees = 620;
+  }
+
+  let maxBid = poolForBidAndAuction - estAuctionFees;
+  if (maxBid < 0) maxBid = 0;
+
+  document.getElementById('maxOutlay').innerText = '$' + maxOutlay.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('estAuctionFees').innerText = '$' + estAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('maxBid').innerText = '$' + maxBid.toLocaleString(undefined, {maximumFractionDigits: 0});
+}
+
+calculate();
+</script>
+
+</body>
+</html>
     margin-bottom: 25px;
     border-bottom: 1px solid #333;
     padding-bottom: 15px;
