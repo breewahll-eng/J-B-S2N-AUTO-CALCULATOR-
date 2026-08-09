@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J & B Autos Matrix</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+<title>J & B Autos Matrix V1.1</title>
 <style>
   :root {
     --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
     --success: #059669; --danger: #DC2626; --danger-light: #FEF2F2;
     --text-main: #111827; --text-muted: #6B7280; --border: #E5E7EB; --input-bg: #F9FAFB;
+    --warning: #F59E0B; --warning-light: #FEF3C7;
   }
   body {
     background-color: var(--bg); color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0; padding: 16px; -webkit-font-smoothing: antialiased;
   }
-  .container { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
-  h2 { text-align: center; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin: 10px 0 24px 0; }
+  .container { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+  h2 { text-align: center; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin: 10px 0 24px 0; text-transform: uppercase; }
   h2 span { color: var(--accent); }
 
+  /* Base Components */
   .master-selector { margin-bottom: 20px; }
   .exchange-select {
     width: 100%; padding: 14px; background: var(--surface); border: 2px solid var(--accent);
@@ -65,27 +65,70 @@
   .grand-total-label { font-size: 15px; font-weight: 700; color: var(--text-main); }
   .grand-total-value { font-size: 36px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
 
-  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-  .btn-primary { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase; }
+  /* Action Grid */
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+  .btn { border: none; padding: 12px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; text-align: center; }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+
+  /* Sections */
+  .section-title { font-size: 14px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-top: 30px;}
   
-  .ledger-section { margin-top: 30px; }
-  .ledger-title { font-size: 14px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 8px;}
-  .deal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-  .deal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .deal-name { font-weight: 700; font-size: 15px; color: var(--text-main); }
-  .deal-profit { font-weight: 700; color: var(--success); font-size: 14px; }
-  .deal-exchange { display: inline-block; background: #E5E7EB; color: #4B5563; font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 4px; margin-bottom: 10px; }
-  .deal-details { font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 12px; }
-  .deal-actions { display: flex; gap: 8px; }
-  .btn-copy { flex: 2; background: var(--accent-light); color: var(--accent); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .btn-delete { flex: 1; background: var(--danger-light); color: var(--danger); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  /* Ledger & Live Ops Cards */
+  .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .item-name { font-weight: 700; font-size: 15px; color: var(--text-main); }
+  .item-exchange { display: inline-block; background: #E5E7EB; color: #4B5563; font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 4px; margin-bottom: 10px; }
+  .item-details { font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .item-actions { display: flex; gap: 8px; margin-top: 12px;}
+  .btn-sm { flex: 1; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+  .btn-sm-primary { background: var(--accent-light); color: var(--accent); }
+  .btn-sm-danger { background: var(--danger-light); color: var(--danger); }
+
+  /* Live Ops Specifics */
+  .live-ops-card { border-left: 4px solid var(--warning); position: relative; overflow: hidden; }
+  .clock-display { font-size: 24px; font-weight: 800; color: var(--text-main); text-align: center; margin: 10px 0; padding: 10px; background: var(--input-bg); border-radius: 8px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .bid-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; background: #F3F4F6; padding: 8px; border-radius: 8px; margin-bottom: 10px; }
+  .metric-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+  .metric-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
+  .metric-val.max { color: var(--accent); }
+
+  /* Modal Setup */
+  #liveOpsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+  .modal-content { background: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 20px; }
+  .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Push Tripwire Alerts */
+  @keyframes critical-pulse {
+    0% { background-color: var(--danger-light); border-color: var(--danger); }
+    50% { background-color: #fca5a5; border-color: #991b1b; }
+    100% { background-color: var(--danger-light); border-color: var(--danger); }
+  }
+  .critical-flash { animation: critical-pulse 1s infinite; }
+  .critical-flash .clock-display { color: var(--danger); }
+
+  #pushBanner {
+    position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+    background: var(--danger); color: white; padding: 16px 24px; border-radius: 12px;
+    font-weight: 800; box-shadow: 0 10px 25px rgba(220, 38, 38, 0.5);
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 9999; width: 90%; max-width: 400px; text-align: center; cursor: pointer;
+  }
+  #pushBanner.active { top: 20px; }
+  #pushBanner span { display: block; font-size: 12px; font-weight: 500; margin-top: 4px; }
 </style>
 </head>
 <body>
 
+<!-- Push Tripwire -->
+<div id="pushBanner" onclick="dismissBanner()">
+  🚨 CRITICAL: AUCTION CLOSING 🚨
+  <span id="bannerText">A tracked vehicle is ending in under 5 minutes. Tap to dismiss.</span>
+</div>
+
 <div class="container">
-  <h2>J&B <span>MATRIX</span></h2>
+  <h2>J&B <span>MATRIX V1.1</span></h2>
 
   <!-- Master Exchange Routing -->
   <div class="master-selector">
@@ -167,13 +210,59 @@
   </div>
 
   <div class="action-grid">
-    <button class="btn-secondary" onclick="resetCalculator()">Clear Data</button>
-    <button class="btn-primary" onclick="saveDeal()">Save Deal</button>
+    <button class="btn btn-secondary" onclick="resetCalculator()">Clear Data</button>
+    <button class="btn btn-primary" onclick="saveDeal()">Save Deal</button>
+    <button class="btn btn-danger" onclick="openLiveModal()">Live Ops</button>
   </div>
 
-  <div class="ledger-section" id="ledger-container" style="display: none;">
-    <div class="ledger-title">Pipeline Ledger</div>
+  <!-- Live Operations Section -->
+  <div id="liveOps-container" style="display: none;">
+    <div class="section-title" style="border-bottom-color: var(--warning);">Live Operations Command</div>
+    <div id="liveOps-list"></div>
+  </div>
+
+  <!-- Pipeline Ledger Section -->
+  <div id="ledger-container" style="display: none;">
+    <div class="section-title">Pipeline Ledger</div>
     <div id="ledger-list"></div>
+  </div>
+</div>
+
+<!-- Modal: Setup Live Ops -->
+<div id="liveOpsModal">
+  <div class="modal-content">
+    <div class="card-header" style="color: var(--danger);">Deploy to Live Ops</div>
+    <p style="font-size: 12px; color: var(--text-muted); margin-top: -10px; margin-bottom: 15px;">Max Allowable Bid (<span id="modalMaxBidText" style="font-weight:700;"></span>) locked from calculator.</p>
+    
+    <div class="modal-row">
+      <div class="input-group">
+        <label>Opening / Current Bid</label>
+        <div class="input-wrapper currency"><input type="number" id="liveOpening" value="0"></div>
+      </div>
+      <div class="input-group">
+        <label>Buy It Now (Opt)</label>
+        <div class="input-wrapper currency"><input type="number" id="liveBin" placeholder="Leave empty"></div>
+      </div>
+    </div>
+    
+    <div class="input-group" style="margin-top: 10px;">
+      <label>Time Remaining (Lock Timestamp)</label>
+      <div class="modal-row">
+        <div>
+          <label style="font-size: 11px;">Hours</label>
+          <input type="number" id="liveHrs" value="0" style="padding-left:14px;">
+        </div>
+        <div>
+          <label style="font-size: 11px;">Minutes</label>
+          <input type="number" id="liveMins" value="15" style="padding-left:14px;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="action-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
+      <button class="btn btn-secondary" onclick="closeLiveModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="deployLiveBid()">Deploy Tracker</button>
+    </div>
   </div>
 </div>
 
@@ -182,15 +271,23 @@ let activeMembership = 'premium';
 let currentBestBid = 0;
 let currentTotalCost = 0;
 let savedDeals = [];
+let liveDeals = [];
+let clockInterval;
+let mutedBanners = {}; // Prevent banner spam for same ID
 
 window.onload = function() {
-  if (localStorage.getItem('jb_deals')) {
-    savedDeals = JSON.parse(localStorage.getItem('jb_deals'));
-    renderLedger();
-  }
+  if (localStorage.getItem('jb_deals')) savedDeals = JSON.parse(localStorage.getItem('jb_deals'));
+  if (localStorage.getItem('jb_live_deals')) liveDeals = JSON.parse(localStorage.getItem('jb_live_deals'));
+  
   updateFromTop();
+  renderLedger();
+  renderLiveOps();
+  
+  // Start the heartbeat
+  clockInterval = setInterval(syncClocks, 1000);
 };
 
+// --- CORE CALCULATOR LOGIC (PRESERVED) ---
 function switchExchange() {
   const exchange = document.getElementById('activeExchange').value;
   const abmToggles = document.getElementById('abm-toggles');
@@ -198,32 +295,11 @@ function switchExchange() {
   const procLabel = document.getElementById('processingLabel');
   const brokerLabel = document.getElementById('brokerLabel');
   
-  if (exchange === 'ABM') {
-    abmToggles.style.display = 'flex';
-    procInput.value = 150;
-    procLabel.innerText = "Platform Processing Fee";
-    brokerLabel.innerText = "ABM Broker Fee";
-  } else if (exchange === 'ABB') {
-    abmToggles.style.display = 'none';
-    procInput.value = 199;
-    procLabel.innerText = "ABB Documentation Fee";
-    brokerLabel.innerText = "ABB Transaction Fee";
-  } else if (exchange === 'ADVANCE_MOTORS') {
-    abmToggles.style.display = 'none';
-    procInput.value = 229; 
-    procLabel.innerText = "Advance Fixed Costs (Gate/Wire/Doc)";
-    brokerLabel.innerText = "Advance Broker Fee";
-  } else if (exchange === 'COPART_NATIVE') {
-    abmToggles.style.display = 'none';
-    procInput.value = 79;
-    procLabel.innerText = "Copart Gate Fee";
-    brokerLabel.innerText = "Virtual Bid Fee";
-  } else if (exchange.startsWith('IAA_')) {
-    abmToggles.style.display = 'none';
-    procInput.value = 140; // $105 Handling + $15 Env + $20 Title
-    procLabel.innerText = "IAA Handling, Title & Env Fee ($140)";
-    brokerLabel.innerText = "IAA Live Online Bid Fee";
-  }
+  if (exchange === 'ABM') { abmToggles.style.display = 'flex'; procInput.value = 150; procLabel.innerText = "Platform Processing Fee"; brokerLabel.innerText = "ABM Broker Fee"; }
+  else if (exchange === 'ABB') { abmToggles.style.display = 'none'; procInput.value = 199; procLabel.innerText = "ABB Documentation Fee"; brokerLabel.innerText = "ABB Transaction Fee"; }
+  else if (exchange === 'ADVANCE_MOTORS') { abmToggles.style.display = 'none'; procInput.value = 229; procLabel.innerText = "Advance Fixed Costs"; brokerLabel.innerText = "Advance Broker Fee"; }
+  else if (exchange === 'COPART_NATIVE') { abmToggles.style.display = 'none'; procInput.value = 79; procLabel.innerText = "Copart Gate Fee"; brokerLabel.innerText = "Virtual Bid Fee"; }
+  else if (exchange.startsWith('IAA_')) { abmToggles.style.display = 'none'; procInput.value = 140; procLabel.innerText = "IAA Handling & Title ($140)"; brokerLabel.innerText = "IAA Live Online Bid Fee"; }
   calculateCurrentState();
 }
 
@@ -235,11 +311,8 @@ function setMembership(level) {
   calculateCurrentState();
 }
 
-function setQuickFreight(amount) {
-  document.getElementById('freight').value = amount;
-  updateFromTop();
-}
-
+function setQuickFreight(amount) { document.getElementById('freight').value = amount; updateFromTop(); }
+function formatCurrency(num) { return '$' + num.toLocaleString('en-US', {maximumFractionDigits: 0}); }
 function checkProfitHealth() {
   const profitInput = document.getElementById('profit');
   if ((parseFloat(profitInput.value) || 0) < 1000) profitInput.classList.add('danger');
@@ -253,8 +326,7 @@ function updateFromTop() {
   const freight = parseFloat(document.getElementById('freight').value) || 0;
   const outlay = resale - profit - repairs - freight;
   document.getElementById('maxOutlayInput').value = outlay;
-  checkProfitHealth();
-  executeBidMath(outlay);
+  checkProfitHealth(); executeBidMath(outlay);
 }
 
 function updateFromOutlay() {
@@ -263,285 +335,234 @@ function updateFromOutlay() {
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
   document.getElementById('profit').value = resale - outlay - repairs - freight;
-  checkProfitHealth();
-  executeBidMath(outlay);
+  checkProfitHealth(); executeBidMath(outlay);
 }
 
-function calculateCurrentState() {
-  executeBidMath(parseFloat(document.getElementById('maxOutlayInput').value) || 0);
-}
+function calculateCurrentState() { executeBidMath(parseFloat(document.getElementById('maxOutlayInput').value) || 0); }
 
-function formatCurrency(num) { return '$' + num.toLocaleString('en-US', {maximumFractionDigits: 0}); }
-
-// COPART DIRECT LOGIC
+// FEE BRACKETS
 function getCopartNativeBuyerFee(bid) {
-  if (bid < 50) return 25;
-  if (bid < 100) return 45;
-  if (bid < 200) return 80;
-  if (bid < 300) return 120;
-  if (bid < 400) return 120;
-  if (bid < 500) return 160;
-  if (bid < 550) return 185;
-  if (bid < 600) return 185;
-  if (bid < 700) return 210;
-  if (bid < 800) return 230;
-  if (bid < 900) return 250;
-  if (bid < 1000) return 275;
-  if (bid < 1200) return 325;
-  if (bid < 1300) return 350;
-  if (bid < 1400) return 365;
-  if (bid < 1500) return 380;
-  if (bid < 1600) return 390;
-  if (bid < 1700) return 410;
-  if (bid < 1800) return 420;
-  if (bid < 2000) return 440;
-  if (bid < 2400) return 470;
-  if (bid < 2500) return 480;
-  if (bid < 3000) return 500;
-  if (bid < 3500) return 600;
-  if (bid < 4000) return 675;
-  if (bid < 4500) return 710;
-  if (bid < 6000) return 750;
-  if (bid < 7500) return 800;
-  if (bid < 8000) return 815;
-  if (bid < 10000) return 840;
-  if (bid < 15000) return 850;
-  return bid * 0.0725;
+  if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<400)return 120;if(bid<500)return 160;if(bid<600)return 185;
+  if(bid<700)return 210;if(bid<800)return 230;if(bid<900)return 250;if(bid<1000)return 275;if(bid<1200)return 325;if(bid<1300)return 350;
+  if(bid<1400)return 365;if(bid<1500)return 380;if(bid<1600)return 390;if(bid<1700)return 410;if(bid<1800)return 420;if(bid<2000)return 440;
+  if(bid<2400)return 470;if(bid<2500)return 480;if(bid<3000)return 500;if(bid<3500)return 600;if(bid<4000)return 675;if(bid<4500)return 710;
+  if(bid<6000)return 750;if(bid<7500)return 800;if(bid<8000)return 815;if(bid<10000)return 840;if(bid<15000)return 850;return bid*0.0725;
 }
-
 function getCopartVirtualBidFee(bid) {
-  if (bid < 100) return 0;
-  if (bid < 500) return 39;
-  if (bid < 1000) return 49;
-  if (bid < 1500) return 69;
-  if (bid < 2000) return 70;
-  if (bid < 4000) return 89;
-  if (bid < 6000) return 99;
-  if (bid < 8000) return 119;
-  return 129;
+  if(bid<100)return 0;if(bid<500)return 39;if(bid<1000)return 49;if(bid<1500)return 69;if(bid<2000)return 70;
+  if(bid<4000)return 89;if(bid<6000)return 99;if(bid<8000)return 119;return 129;
 }
-
-// IAA DIRECT LOGIC (CORRECTED - EFFECTIVE NOV 4, 2024)
 function getIaaBuyerFeeStandard(bid) {
-  if (bid < 50) return 25;
-  if (bid < 100) return 45;
-  if (bid < 200) return 80;
-  if (bid < 300) return 130;
-  if (bid < 350) return 137.50;
-  if (bid < 400) return 145;
-  if (bid < 450) return 175;
-  if (bid < 500) return 185;
-  if (bid < 550) return 205;
-  if (bid < 600) return 210;
-  if (bid < 700) return 240;
-  if (bid < 800) return 270;
-  if (bid < 900) return 295;
-  if (bid < 1000) return 320;
-  if (bid < 1200) return 375;
-  if (bid < 1300) return 395;
-  if (bid < 1400) return 410;
-  if (bid < 1500) return 430;
-  if (bid < 1600) return 445;
-  if (bid < 1700) return 465;
-  if (bid < 1800) return 485;
-  if (bid < 2000) return 510;
-  if (bid < 2400) return 535;
-  if (bid < 2500) return 570;
-  if (bid < 3000) return 610;
-  if (bid < 3500) return 655;
-  if (bid < 4000) return 705;
-  if (bid < 4500) return 725;
-  if (bid < 5000) return 750;
-  if (bid < 5500) return 775;
-  if (bid < 6000) return 800;
-  if (bid < 6500) return 825;
-  if (bid < 7000) return 845;
-  if (bid < 7500) return 880;
-  if (bid < 8000) return 900;
-  if (bid < 8500) return 925;
-  if (bid < 10000) return 945;
-  if (bid < 15000) return 1000;
-  return bid * 0.075;
+  if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<300)return 130;if(bid<350)return 137.5;
+  if(bid<400)return 145;if(bid<450)return 175;if(bid<500)return 185;if(bid<550)return 205;if(bid<600)return 210;
+  if(bid<700)return 240;if(bid<800)return 270;if(bid<900)return 295;if(bid<1000)return 320;if(bid<1200)return 375;
+  if(bid<1300)return 395;if(bid<1400)return 410;if(bid<1500)return 430;if(bid<1600)return 445;if(bid<1700)return 465;
+  if(bid<1800)return 485;if(bid<2000)return 510;if(bid<2400)return 535;if(bid<2500)return 570;if(bid<3000)return 610;
+  if(bid<3500)return 655;if(bid<4000)return 705;if(bid<4500)return 725;if(bid<5000)return 750;if(bid<5500)return 775;
+  if(bid<6000)return 800;if(bid<6500)return 825;if(bid<7000)return 845;if(bid<7500)return 880;if(bid<8000)return 900;
+  if(bid<8500)return 925;if(bid<10000)return 945;if(bid<15000)return 1000;return bid*0.075;
 }
-
 function getIaaBuyerFeeHighVolume(bid) {
-  if (bid < 100) return 1;
-  if (bid < 200) return 25;
-  if (bid < 300) return 60;
-  if (bid < 350) return 85;
-  if (bid < 400) return 100;
-  if (bid < 450) return 125;
-  if (bid < 500) return 135;
-  if (bid < 550) return 145;
-  if (bid < 600) return 155;
-  if (bid < 700) return 170;
-  if (bid < 800) return 195;
-  if (bid < 900) return 215;
-  if (bid < 1000) return 230;
-  if (bid < 1200) return 250;
-  if (bid < 1300) return 270;
-  if (bid < 1400) return 285;
-  if (bid < 1500) return 300;
-  if (bid < 1600) return 315;
-  if (bid < 1700) return 330;
-  if (bid < 1800) return 350;
-  if (bid < 2000) return 370;
-  if (bid < 2400) return 390;
-  if (bid < 2500) return 425;
-  if (bid < 3000) return 460;
-  if (bid < 3500) return 505;
-  if (bid < 4000) return 555;
-  if (bid < 4500) return 600;
-  if (bid < 5000) return 625;
-  if (bid < 5500) return 650;
-  if (bid < 6000) return 675;
-  if (bid < 6500) return 700;
-  if (bid < 7000) return 720;
-  if (bid < 7500) return 755;
-  if (bid < 8000) return 775;
-  if (bid < 8500) return 800;
-  if (bid < 10000) return 820;
-  if (bid < 11500) return 850;
-  if (bid < 12000) return 860;
-  if (bid < 12500) return 875;
-  if (bid < 15000) return 890;
-  return bid * 0.06;
+  if(bid<100)return 1;if(bid<200)return 25;if(bid<300)return 60;if(bid<350)return 85;if(bid<400)return 100;if(bid<450)return 125;
+  if(bid<500)return 135;if(bid<550)return 145;if(bid<600)return 155;if(bid<700)return 170;if(bid<800)return 195;if(bid<900)return 215;
+  if(bid<1000)return 230;if(bid<1200)return 250;if(bid<1300)return 270;if(bid<1400)return 285;if(bid<1500)return 300;if(bid<1600)return 315;
+  if(bid<1700)return 330;if(bid<1800)return 350;if(bid<2000)return 370;if(bid<2400)return 390;if(bid<2500)return 425;if(bid<3000)return 460;
+  if(bid<3500)return 505;if(bid<4000)return 555;if(bid<4500)return 600;if(bid<5000)return 625;if(bid<5500)return 650;if(bid<6000)return 675;
+  if(bid<6500)return 700;if(bid<7000)return 720;if(bid<7500)return 755;if(bid<8000)return 775;if(bid<8500)return 800;if(bid<10000)return 820;
+  if(bid<11500)return 850;if(bid<12000)return 860;if(bid<12500)return 875;if(bid<15000)return 890;return bid*0.06;
 }
-
 function getIaaLiveBidFee(bid) {
-  if (bid < 100) return 0;
-  if (bid < 500) return 50;
-  if (bid < 1000) return 65;
-  if (bid < 1500) return 85;
-  if (bid < 2000) return 95;
-  if (bid < 4000) return 110;
-  if (bid < 6000) return 125;
-  if (bid < 8000) return 145;
-  return 160;
+  if(bid<100)return 0;if(bid<500)return 50;if(bid<1000)return 65;if(bid<1500)return 85;
+  if(bid<2000)return 95;if(bid<4000)return 110;if(bid<6000)return 125;if(bid<8000)return 145;return 160;
 }
 
-// CORE MULTI-EXCHANGE LOGIC ROUTER
 function executeBidMath(maxOutlay) {
   const exchange = document.getElementById('activeExchange').value;
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
-  
-  let bestBid = 0; let bestTotal = 0;
-  let finalAuctionFees = 0; let finalBrokerFees = 0;
+  let bestBid = 0; let bestTotal = 0; let finalAuctionFees = 0; let finalBrokerFees = 0;
 
   for (let testBid = 100; testBid <= 30000; testBid += 1) {
-    let auctionFees = 0;
-    let brokerFees = 0;
-
+    let auctionFees = 0; let brokerFees = 0;
     switch(exchange) {
       case 'ABM':
-        if (testBid <= 1500) auctionFees = 628;
-        else if (testBid <= 1800) auctionFees = 678;
-        else if (testBid <= 2500) auctionFees = 718;
-        else if (testBid <= 3450) auctionFees = 848;
-        else if (testBid <= 3950) auctionFees = 923;
-        else if (testBid <= 4000) auctionFees = 968;
-        else if (testBid <= 4500) auctionFees = 1003;
-        else if (testBid <= 5000) auctionFees = 1008;
-        else if (testBid <= 7000) auctionFees = 1338;
-        else if (testBid <= 10000) auctionFees = 1798;
-        else auctionFees = 3298;
+        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2500)auctionFees=718;
+        else if(testBid<=3450)auctionFees=848;else if(testBid<=3950)auctionFees=923;else if(testBid<=4000)auctionFees=968;
+        else if(testBid<=4500)auctionFees=1003;else if(testBid<=5000)auctionFees=1008;else if(testBid<=7000)auctionFees=1338;
+        else if(testBid<=10000)auctionFees=1798;else auctionFees=3298;
         brokerFees = activeMembership === 'advanced' ? Math.max(349, testBid * 0.05) : Math.max(150, testBid * 0.04);
         break;
-
       case 'ABB':
-        if (testBid <= 1500) auctionFees = 628;
-        else if (testBid <= 1800) auctionFees = 678;
-        else if (testBid <= 2600) auctionFees = 798;
-        else if (testBid <= 3000) auctionFees = 898;
-        else if (testBid <= 5000) auctionFees = 1058;
-        else if (testBid <= 6500) auctionFees = 1138;
-        else if (testBid <= 10000) auctionFees = 1198;
-        else auctionFees = 3298;
+        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2600)auctionFees=798;
+        else if(testBid<=3000)auctionFees=898;else if(testBid<=5000)auctionFees=1058;else if(testBid<=6500)auctionFees=1138;
+        else if(testBid<=10000)auctionFees=1198;else auctionFees=3298;
         brokerFees = testBid <= 5000 ? 349 : testBid * 0.09;
         break;
-
       case 'ADVANCE_MOTORS':
-        auctionFees = getCopartNativeBuyerFee(testBid) + getCopartVirtualBidFee(testBid);
-        brokerFees = 350;
-        break;
-
+        auctionFees = getCopartNativeBuyerFee(testBid) + getCopartVirtualBidFee(testBid); brokerFees = 350; break;
       case 'COPART_NATIVE':
-        auctionFees = getCopartNativeBuyerFee(testBid);
-        brokerFees = getCopartVirtualBidFee(testBid);
-        break;
-
-      case 'IAA_STANDARD':
-      case 'IAA_NON_LICENSED':
-        auctionFees = getIaaBuyerFeeStandard(testBid);
-        brokerFees = getIaaLiveBidFee(testBid);
-        break;
-
+        auctionFees = getCopartNativeBuyerFee(testBid); brokerFees = getCopartVirtualBidFee(testBid); break;
+      case 'IAA_STANDARD': case 'IAA_NON_LICENSED':
+        auctionFees = getIaaBuyerFeeStandard(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
       case 'IAA_HIGH':
-        auctionFees = getIaaBuyerFeeHighVolume(testBid);
-        brokerFees = getIaaLiveBidFee(testBid);
-        break;
+        auctionFees = getIaaBuyerFeeHighVolume(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
     }
-
     let totalCost = testBid + auctionFees + brokerFees + processingFee;
-    
-    if (totalCost <= maxOutlay) {
-      bestBid = testBid;
-      bestTotal = totalCost;
-      finalAuctionFees = auctionFees;
-      finalBrokerFees = brokerFees;
-    } else { break; }
+    if (totalCost <= maxOutlay) { bestBid = testBid; bestTotal = totalCost; finalAuctionFees = auctionFees; finalBrokerFees = brokerFees; } 
+    else break;
   }
   
-  currentBestBid = bestBid;
-  currentTotalCost = bestTotal;
+  currentBestBid = bestBid; currentTotalCost = bestTotal;
   document.getElementById('maxBid').innerText = formatCurrency(bestBid);
   document.getElementById('estAuctionFees').innerText = formatCurrency(finalAuctionFees);
   document.getElementById('brokerFeeDisplay').innerText = formatCurrency(finalBrokerFees);
 }
 
 function resetCalculator() {
-  document.getElementById('vehicleName').value = '';
-  document.getElementById('resale').value = 6500;
-  document.getElementById('profit').value = 2000;
-  document.getElementById('repairs').value = 800;
-  document.getElementById('freight').value = 600;
-  updateFromTop();
+  document.getElementById('vehicleName').value = ''; document.getElementById('resale').value = 6500;
+  document.getElementById('profit').value = 2000; document.getElementById('repairs').value = 800;
+  document.getElementById('freight').value = 600; updateFromTop();
 }
 
 function saveDeal() {
   const name = document.getElementById('vehicleName').value || 'Unnamed Asset';
   const exchangeLabel = document.getElementById('activeExchange').options[document.getElementById('activeExchange').selectedIndex].text;
-  
-  const deal = { 
-    id: Date.now(), name, bid: currentBestBid, 
-    profit: parseFloat(document.getElementById('profit').value) || 0, 
-    outlay: parseFloat(document.getElementById('maxOutlayInput').value) || 0, 
-    resale: parseFloat(document.getElementById('resale').value) || 0, 
-    platform: exchangeLabel
-  };
-  
-  savedDeals.unshift(deal);
-  localStorage.setItem('jb_deals', JSON.stringify(savedDeals));
-  renderLedger();
+  const deal = { id: Date.now(), name, bid: currentBestBid, profit: parseFloat(document.getElementById('profit').value) || 0, outlay: parseFloat(document.getElementById('maxOutlayInput').value) || 0, resale: parseFloat(document.getElementById('resale').value) || 0, platform: exchangeLabel };
+  savedDeals.unshift(deal); localStorage.setItem('jb_deals', JSON.stringify(savedDeals)); renderLedger();
   
   const btn = document.querySelector('.btn-primary');
   btn.innerText = "SAVED!"; btn.style.background = "var(--success)";
   setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
 }
 
-function deleteDeal(id) {
-  savedDeals = savedDeals.filter(deal => deal.id !== id);
-  localStorage.setItem('jb_deals', JSON.stringify(savedDeals));
-  renderLedger();
+// --- LIVE OPERATIONS (NEW ARCHITECTURE) ---
+function openLiveModal() {
+  document.getElementById('modalMaxBidText').innerText = formatCurrency(currentBestBid);
+  document.getElementById('liveOpsModal').style.display = 'flex';
 }
 
-function copyDeal(id) {
-  const deal = savedDeals.find(d => d.id === id);
-  if(!deal) return;
-  const text = `TARGET: ${deal.name}\nPLATFORM: ${deal.platform}\n\n💰 Target Resale: ${formatCurrency(deal.resale)}\n🛑 MAX BID LIMIT: ${formatCurrency(deal.bid)}\n📉 Total Est. Outlay: ${formatCurrency(deal.outlay)}\n✅ PROJECTED PROFIT: ${formatCurrency(deal.profit)}\n\n- J&B Autos Matrix`;
-  navigator.clipboard.writeText(text).then(() => alert("Report copied to clipboard. Ready to send."));
+function closeLiveModal() {
+  document.getElementById('liveOpsModal').style.display = 'none';
 }
 
+function deployLiveBid() {
+  const name = document.getElementById('vehicleName').value || 'Unnamed Asset';
+  const exchangeLabel = document.getElementById('activeExchange').options[document.getElementById('activeExchange').selectedIndex].text;
+  const opening = parseFloat(document.getElementById('liveOpening').value) || 0;
+  const bin = parseFloat(document.getElementById('liveBin').value) || null;
+  const hrs = parseInt(document.getElementById('liveHrs').value) || 0;
+  const mins = parseInt(document.getElementById('liveMins').value) || 0;
+  
+  // Create immutable timestamp
+  const endTimeMs = Date.now() + (hrs * 3600000) + (mins * 60000);
+  
+  const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, openingBid: opening, binPrice: bin, endTime: endTimeMs };
+  liveDeals.unshift(liveDeal);
+  localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
+  
+  closeLiveModal();
+  renderLiveOps();
+  
+  // Reset modal inputs
+  document.getElementById('liveHrs').value = "0";
+  document.getElementById('liveMins').value = "15";
+}
+
+function dismissBanner() {
+  document.getElementById('pushBanner').classList.remove('active');
+}
+
+function syncClocks() {
+  if (liveDeals.length === 0) return;
+  
+  const now = Date.now();
+  let triggerBanner = false;
+  let bannerName = "";
+
+  liveDeals.forEach(deal => {
+    const el = document.getElementById(`clock-${deal.id}`);
+    const cardEl = document.getElementById(`liveCard-${deal.id}`);
+    if(!el || !cardEl) return;
+
+    const diff = deal.endTime - now;
+    
+    if (diff <= 0) {
+      el.innerText = "AUCTION ENDED";
+      cardEl.classList.remove('critical-flash');
+    } else {
+      // Calculate HH:MM:SS
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      
+      let display = "";
+      if (h > 0) display += h + "h ";
+      display += m.toString().padStart(2, '0') + "m " + s.toString().padStart(2, '0') + "s";
+      el.innerText = display;
+
+      // RED TRIPWIRE (Under 5 minutes / 300,000 ms)
+      if (diff <= 300000) {
+        cardEl.classList.add('critical-flash');
+        if (!mutedBanners[deal.id]) {
+          triggerBanner = true;
+          bannerName = deal.name;
+          mutedBanners[deal.id] = true; // Mark as alerted so banner stays down if dismissed
+        }
+      } else {
+        cardEl.classList.remove('critical-flash');
+      }
+    }
+  });
+
+  if (triggerBanner) {
+    document.getElementById('bannerText').innerText = bannerName + " is ending in under 5 minutes.";
+    document.getElementById('pushBanner').classList.add('active');
+    // Auto hide banner after 10s if not clicked
+    setTimeout(dismissBanner, 10000);
+  }
+}
+
+function removeLiveDeal(id) {
+  liveDeals = liveDeals.filter(d => d.id !== id);
+  localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
+  delete mutedBanners[id];
+  renderLiveOps();
+}
+
+function renderLiveOps() {
+  const container = document.getElementById('liveOps-container');
+  const list = document.getElementById('liveOps-list');
+  list.innerHTML = '';
+  if (liveDeals.length === 0) { container.style.display = 'none'; return; }
+  
+  container.style.display = 'block';
+  liveDeals.forEach(deal => {
+    let binHTML = deal.binPrice ? `<div style="text-align:center;"><div class="metric-label">Buy It Now</div><div class="metric-val" style="color:var(--success);">${formatCurrency(deal.binPrice)}</div></div>` : `<div></div>`;
+    
+    list.innerHTML += `
+      <div class="item-card live-ops-card" id="liveCard-${deal.id}">
+        <div class="item-header">
+          <span class="item-name">${deal.name}</span>
+          <span class="item-exchange" style="margin-bottom:0; background:var(--warning-light); color:#B45309;">LIVE TRACKER</span>
+        </div>
+        
+        <div class="clock-display" id="clock-${deal.id}">--m --s</div>
+        
+        <div class="bid-metrics">
+          <div><div class="metric-label">Current Bid</div><div class="metric-val">${formatCurrency(deal.openingBid)}</div></div>
+          <div><div class="metric-label">Your Max Bid</div><div class="metric-val max">${formatCurrency(deal.maxBid)}</div></div>
+          ${binHTML}
+        </div>
+        
+        <div class="item-actions">
+          <button class="btn-sm btn-sm-danger" onclick="removeLiveDeal(${deal.id})">Close Operation</button>
+        </div>
+      </div>
+    `;
+  });
+  syncClocks(); // force immediate UI update
+}
+
+// --- LEDGER LOGIC ---
 function renderLedger() {
   const container = document.getElementById('ledger-container');
   const list = document.getElementById('ledger-list');
@@ -551,23 +572,23 @@ function renderLedger() {
   container.style.display = 'block';
   savedDeals.forEach(deal => {
     list.innerHTML += `
-      <div class="deal-card">
-        <div class="deal-header">
-          <span class="deal-name">${deal.name}</span>
-          <span class="deal-profit">+${formatCurrency(deal.profit)}</span>
-        </div>
-        <div class="deal-exchange">${deal.platform}</div>
-        <div class="deal-details">
-          <span>Max Bid: ${formatCurrency(deal.bid)}</span>
-          <span>Outlay: ${formatCurrency(deal.outlay)}</span>
-        </div>
-        <div class="deal-actions">
-          <button class="btn-copy" onclick="copyDeal(${deal.id})">Export Report</button>
-          <button class="btn-delete" onclick="deleteDeal(${deal.id})">Drop</button>
+      <div class="item-card">
+        <div class="item-header"><span class="item-name">${deal.name}</span><span style="font-weight:700; color:var(--success); font-size:14px;">+${formatCurrency(deal.profit)}</span></div>
+        <div class="item-exchange">${deal.platform}</div>
+        <div class="item-details"><span>Max Bid: ${formatCurrency(deal.bid)}</span><span>Outlay: ${formatCurrency(deal.outlay)}</span></div>
+        <div class="item-actions">
+          <button class="btn-sm btn-sm-primary" onclick="copyDeal(${deal.id})">Copy Report</button>
+          <button class="btn-sm btn-sm-danger" onclick="deleteDeal(${deal.id})">Drop</button>
         </div>
       </div>
     `;
   });
+}
+function deleteDeal(id) { savedDeals = savedDeals.filter(deal => deal.id !== id); localStorage.setItem('jb_deals', JSON.stringify(savedDeals)); renderLedger(); }
+function copyDeal(id) {
+  const deal = savedDeals.find(d => d.id === id); if(!deal) return;
+  const text = `TARGET: ${deal.name}\nPLATFORM: ${deal.platform}\n\n💰 Target Resale: ${formatCurrency(deal.resale)}\n🛑 MAX BID LIMIT: ${formatCurrency(deal.bid)}\n📉 Total Est. Outlay: ${formatCurrency(deal.outlay)}\n✅ PROJECTED PROFIT: ${formatCurrency(deal.profit)}\n\n- J&B Autos Matrix`;
+  navigator.clipboard.writeText(text).then(() => alert("Report copied to clipboard."));
 }
 </script>
 </body>
