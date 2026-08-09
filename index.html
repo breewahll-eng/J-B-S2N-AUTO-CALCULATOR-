@@ -8,37 +8,23 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
 <style>
   :root {
-    --bg: #F4F7F9;
-    --surface: #FFFFFF;
-    --accent: #2563EB; 
-    --accent-light: #EFF6FF;
-    --success: #059669;
-    --danger: #DC2626;
-    --danger-light: #FEF2F2;
-    --text-main: #111827;
-    --text-muted: #6B7280;
-    --border: #E5E7EB;
-    --input-bg: #F9FAFB;
+    --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
+    --success: #059669; --danger: #DC2626; --danger-light: #FEF2F2;
+    --text-main: #111827; --text-muted: #6B7280; --border: #E5E7EB; --input-bg: #F9FAFB;
   }
-  
   body {
-    background-color: var(--bg);
-    color: var(--text-main);
+    background-color: var(--bg); color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    padding: 16px;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; padding: 16px; -webkit-font-smoothing: antialiased;
   }
-  
   .container { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
   h2 { text-align: center; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin: 10px 0 24px 0; }
   h2 span { color: var(--accent); }
 
-  /* Master Selectors */
   .master-selector { margin-bottom: 20px; }
   .exchange-select {
     width: 100%; padding: 14px; background: var(--surface); border: 2px solid var(--accent);
-    color: var(--accent); font-size: 16px; font-weight: 700; border-radius: 12px;
+    color: var(--accent); font-size: 15px; font-weight: 700; border-radius: 12px;
     appearance: none; outline: none; cursor: pointer; text-align: center;
   }
   
@@ -105,9 +91,12 @@
   <div class="master-selector">
     <select id="activeExchange" class="exchange-select" onchange="switchExchange()">
       <option value="ABM">AutoBidMaster (Broker)</option>
-      <option value="COPART_NATIVE">Native Copart (Dealer)</option>
-      <option value="IAA">IAA (Dealer)</option>
-      <option value="MANHEIM">Manheim</option>
+      <option value="ABB">A Better Bid (Broker)</option>
+      <option value="ADVANCE_MOTORS">Advance Motors (Broker)</option>
+      <option value="COPART_NATIVE">Native Copart (Direct)</option>
+      <option value="IAA_STANDARD">IAA Standard Volume (Licensed)</option>
+      <option value="IAA_HIGH">IAA High Volume (Licensed)</option>
+      <option value="IAA_NON_LICENSED">IAA Non-Licensed</option>
     </select>
   </div>
   
@@ -150,8 +139,8 @@
       <div class="input-wrapper currency"><input type="number" id="freight" value="600" oninput="updateFromTop()"></div>
     </div>
     <div class="input-group">
-      <label>Exchange Processing / Gate Fee</label>
-      <div class="input-wrapper currency"><input type="number" id="processingFee" value="150" oninput="calculateCurrentState()"></div>
+      <label id="processingLabel">Exchange Processing / Gate Fee</label>
+      <div class="input-wrapper currency"><input type="number" id="processingFee" value="150" readonly></div>
     </div>
   </div>
 
@@ -161,6 +150,16 @@
       <label style="color: var(--accent); font-weight: 700;">Max Total Outlay (Lynchpin)</label>
       <div class="input-wrapper currency"><input type="number" id="maxOutlayInput" class="lynchpin-input" value="0" oninput="updateFromOutlay()"></div>
     </div>
+    
+    <div class="result-line">
+      <span>Auction / Buyer Fees</span>
+      <span id="estAuctionFees">$0</span>
+    </div>
+    <div class="result-line">
+      <span id="brokerLabel">Broker / Bidding Fee</span>
+      <span id="brokerFeeDisplay">$0</span>
+    </div>
+
     <div class="grand-total">
       <span class="grand-total-label">Max Allowable Bid</span>
       <span class="grand-total-value" id="maxBid">$0</span>
@@ -195,13 +194,35 @@ window.onload = function() {
 function switchExchange() {
   const exchange = document.getElementById('activeExchange').value;
   const abmToggles = document.getElementById('abm-toggles');
+  const procInput = document.getElementById('processingFee');
+  const procLabel = document.getElementById('processingLabel');
+  const brokerLabel = document.getElementById('brokerLabel');
   
   if (exchange === 'ABM') {
     abmToggles.style.display = 'flex';
-    document.getElementById('processingFee').value = 150;
-  } else {
+    procInput.value = 150;
+    procLabel.innerText = "Platform Processing Fee";
+    brokerLabel.innerText = "ABM Broker Fee";
+  } else if (exchange === 'ABB') {
     abmToggles.style.display = 'none';
-    document.getElementById('processingFee').value = 79; // Baseline gate fee placeholder
+    procInput.value = 199;
+    procLabel.innerText = "ABB Documentation Fee";
+    brokerLabel.innerText = "ABB Transaction Fee";
+  } else if (exchange === 'ADVANCE_MOTORS') {
+    abmToggles.style.display = 'none';
+    procInput.value = 229; 
+    procLabel.innerText = "Advance Fixed Costs (Gate/Wire/Doc)";
+    brokerLabel.innerText = "Advance Broker Fee";
+  } else if (exchange === 'COPART_NATIVE') {
+    abmToggles.style.display = 'none';
+    procInput.value = 79;
+    procLabel.innerText = "Copart Gate Fee";
+    brokerLabel.innerText = "Virtual Bid Fee";
+  } else if (exchange.startsWith('IAA_')) {
+    abmToggles.style.display = 'none';
+    procInput.value = 140; // $105 Handling + $15 Env + $20 Title
+    procLabel.innerText = "IAA Handling, Title & Env Fee ($140)";
+    brokerLabel.innerText = "IAA Live Online Bid Fee";
   }
   calculateCurrentState();
 }
@@ -252,12 +273,160 @@ function calculateCurrentState() {
 
 function formatCurrency(num) { return '$' + num.toLocaleString('en-US', {maximumFractionDigits: 0}); }
 
+// COPART DIRECT LOGIC
+function getCopartNativeBuyerFee(bid) {
+  if (bid < 50) return 25;
+  if (bid < 100) return 45;
+  if (bid < 200) return 80;
+  if (bid < 300) return 120;
+  if (bid < 400) return 120;
+  if (bid < 500) return 160;
+  if (bid < 550) return 185;
+  if (bid < 600) return 185;
+  if (bid < 700) return 210;
+  if (bid < 800) return 230;
+  if (bid < 900) return 250;
+  if (bid < 1000) return 275;
+  if (bid < 1200) return 325;
+  if (bid < 1300) return 350;
+  if (bid < 1400) return 365;
+  if (bid < 1500) return 380;
+  if (bid < 1600) return 390;
+  if (bid < 1700) return 410;
+  if (bid < 1800) return 420;
+  if (bid < 2000) return 440;
+  if (bid < 2400) return 470;
+  if (bid < 2500) return 480;
+  if (bid < 3000) return 500;
+  if (bid < 3500) return 600;
+  if (bid < 4000) return 675;
+  if (bid < 4500) return 710;
+  if (bid < 6000) return 750;
+  if (bid < 7500) return 800;
+  if (bid < 8000) return 815;
+  if (bid < 10000) return 840;
+  if (bid < 15000) return 850;
+  return bid * 0.0725;
+}
+
+function getCopartVirtualBidFee(bid) {
+  if (bid < 100) return 0;
+  if (bid < 500) return 39;
+  if (bid < 1000) return 49;
+  if (bid < 1500) return 69;
+  if (bid < 2000) return 70;
+  if (bid < 4000) return 89;
+  if (bid < 6000) return 99;
+  if (bid < 8000) return 119;
+  return 129;
+}
+
+// IAA DIRECT LOGIC (CORRECTED - EFFECTIVE NOV 4, 2024)
+function getIaaBuyerFeeStandard(bid) {
+  if (bid < 50) return 25;
+  if (bid < 100) return 45;
+  if (bid < 200) return 80;
+  if (bid < 300) return 130;
+  if (bid < 350) return 137.50;
+  if (bid < 400) return 145;
+  if (bid < 450) return 175;
+  if (bid < 500) return 185;
+  if (bid < 550) return 205;
+  if (bid < 600) return 210;
+  if (bid < 700) return 240;
+  if (bid < 800) return 270;
+  if (bid < 900) return 295;
+  if (bid < 1000) return 320;
+  if (bid < 1200) return 375;
+  if (bid < 1300) return 395;
+  if (bid < 1400) return 410;
+  if (bid < 1500) return 430;
+  if (bid < 1600) return 445;
+  if (bid < 1700) return 465;
+  if (bid < 1800) return 485;
+  if (bid < 2000) return 510;
+  if (bid < 2400) return 535;
+  if (bid < 2500) return 570;
+  if (bid < 3000) return 610;
+  if (bid < 3500) return 655;
+  if (bid < 4000) return 705;
+  if (bid < 4500) return 725;
+  if (bid < 5000) return 750;
+  if (bid < 5500) return 775;
+  if (bid < 6000) return 800;
+  if (bid < 6500) return 825;
+  if (bid < 7000) return 845;
+  if (bid < 7500) return 880;
+  if (bid < 8000) return 900;
+  if (bid < 8500) return 925;
+  if (bid < 10000) return 945;
+  if (bid < 15000) return 1000;
+  return bid * 0.075;
+}
+
+function getIaaBuyerFeeHighVolume(bid) {
+  if (bid < 100) return 1;
+  if (bid < 200) return 25;
+  if (bid < 300) return 60;
+  if (bid < 350) return 85;
+  if (bid < 400) return 100;
+  if (bid < 450) return 125;
+  if (bid < 500) return 135;
+  if (bid < 550) return 145;
+  if (bid < 600) return 155;
+  if (bid < 700) return 170;
+  if (bid < 800) return 195;
+  if (bid < 900) return 215;
+  if (bid < 1000) return 230;
+  if (bid < 1200) return 250;
+  if (bid < 1300) return 270;
+  if (bid < 1400) return 285;
+  if (bid < 1500) return 300;
+  if (bid < 1600) return 315;
+  if (bid < 1700) return 330;
+  if (bid < 1800) return 350;
+  if (bid < 2000) return 370;
+  if (bid < 2400) return 390;
+  if (bid < 2500) return 425;
+  if (bid < 3000) return 460;
+  if (bid < 3500) return 505;
+  if (bid < 4000) return 555;
+  if (bid < 4500) return 600;
+  if (bid < 5000) return 625;
+  if (bid < 5500) return 650;
+  if (bid < 6000) return 675;
+  if (bid < 6500) return 700;
+  if (bid < 7000) return 720;
+  if (bid < 7500) return 755;
+  if (bid < 8000) return 775;
+  if (bid < 8500) return 800;
+  if (bid < 10000) return 820;
+  if (bid < 11500) return 850;
+  if (bid < 12000) return 860;
+  if (bid < 12500) return 875;
+  if (bid < 15000) return 890;
+  return bid * 0.06;
+}
+
+function getIaaLiveBidFee(bid) {
+  if (bid < 100) return 0;
+  if (bid < 500) return 50;
+  if (bid < 1000) return 65;
+  if (bid < 1500) return 85;
+  if (bid < 2000) return 95;
+  if (bid < 4000) return 110;
+  if (bid < 6000) return 125;
+  if (bid < 8000) return 145;
+  return 160;
+}
+
 // CORE MULTI-EXCHANGE LOGIC ROUTER
 function executeBidMath(maxOutlay) {
   const exchange = document.getElementById('activeExchange').value;
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
   
   let bestBid = 0; let bestTotal = 0;
+  let finalAuctionFees = 0; let finalBrokerFees = 0;
 
   for (let testBid = 100; testBid <= 30000; testBid += 1) {
     let auctionFees = 0;
@@ -265,7 +434,6 @@ function executeBidMath(maxOutlay) {
 
     switch(exchange) {
       case 'ABM':
-        // VERIFIED HARD DATA
         if (testBid <= 1500) auctionFees = 628;
         else if (testBid <= 1800) auctionFees = 678;
         else if (testBid <= 2500) auctionFees = 718;
@@ -280,19 +448,37 @@ function executeBidMath(maxOutlay) {
         brokerFees = activeMembership === 'advanced' ? Math.max(349, testBid * 0.05) : Math.max(150, testBid * 0.04);
         break;
 
+      case 'ABB':
+        if (testBid <= 1500) auctionFees = 628;
+        else if (testBid <= 1800) auctionFees = 678;
+        else if (testBid <= 2600) auctionFees = 798;
+        else if (testBid <= 3000) auctionFees = 898;
+        else if (testBid <= 5000) auctionFees = 1058;
+        else if (testBid <= 6500) auctionFees = 1138;
+        else if (testBid <= 10000) auctionFees = 1198;
+        else auctionFees = 3298;
+        brokerFees = testBid <= 5000 ? 349 : testBid * 0.09;
+        break;
+
+      case 'ADVANCE_MOTORS':
+        auctionFees = getCopartNativeBuyerFee(testBid) + getCopartVirtualBidFee(testBid);
+        brokerFees = 350;
+        break;
+
       case 'COPART_NATIVE':
-        // PLACEHOLDER: Requires Dealer A/B/C Tier Bracket Data
-        auctionFees = testBid * 0.15 + 100; // Baseline safety logic
+        auctionFees = getCopartNativeBuyerFee(testBid);
+        brokerFees = getCopartVirtualBidFee(testBid);
         break;
 
-      case 'IAA':
-        // PLACEHOLDER: Requires Licensed Buyer Bracket Data
-        auctionFees = testBid * 0.14 + 125; // Baseline safety logic
+      case 'IAA_STANDARD':
+      case 'IAA_NON_LICENSED':
+        auctionFees = getIaaBuyerFeeStandard(testBid);
+        brokerFees = getIaaLiveBidFee(testBid);
         break;
 
-      case 'MANHEIM':
-        // PLACEHOLDER: Requires Simulcast/In-Lane Fee Data
-        auctionFees = testBid * 0.10 + 200; // Baseline safety logic
+      case 'IAA_HIGH':
+        auctionFees = getIaaBuyerFeeHighVolume(testBid);
+        brokerFees = getIaaLiveBidFee(testBid);
         break;
     }
 
@@ -301,12 +487,16 @@ function executeBidMath(maxOutlay) {
     if (totalCost <= maxOutlay) {
       bestBid = testBid;
       bestTotal = totalCost;
+      finalAuctionFees = auctionFees;
+      finalBrokerFees = brokerFees;
     } else { break; }
   }
   
   currentBestBid = bestBid;
   currentTotalCost = bestTotal;
   document.getElementById('maxBid').innerText = formatCurrency(bestBid);
+  document.getElementById('estAuctionFees').innerText = formatCurrency(finalAuctionFees);
+  document.getElementById('brokerFeeDisplay').innerText = formatCurrency(finalBrokerFees);
 }
 
 function resetCalculator() {
