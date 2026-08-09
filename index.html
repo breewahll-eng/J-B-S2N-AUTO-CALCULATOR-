@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J & B Autos Matrix V1.1</title>
+<title>J & B Autos Matrix V1.2</title>
 <style>
   :root {
     --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
@@ -121,14 +121,14 @@
 </head>
 <body>
 
-<!-- Push Tripwire -->
+<!-- In-App Fallback Banner -->
 <div id="pushBanner" onclick="dismissBanner()">
   🚨 CRITICAL: AUCTION CLOSING 🚨
-  <span id="bannerText">A tracked vehicle is ending in under 5 minutes. Tap to dismiss.</span>
+  <span id="bannerText">A tracked vehicle is ending in under 5 minutes.</span>
 </div>
 
 <div class="container">
-  <h2>J&B <span>MATRIX V1.1</span></h2>
+  <h2>J&B <span>MATRIX V1.2</span></h2>
 
   <!-- Master Exchange Routing -->
   <div class="master-selector">
@@ -283,7 +283,6 @@ window.onload = function() {
   renderLedger();
   renderLiveOps();
   
-  // Start the heartbeat
   clockInterval = setInterval(syncClocks, 1000);
 };
 
@@ -434,8 +433,13 @@ function saveDeal() {
   setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
 }
 
-// --- LIVE OPERATIONS (NEW ARCHITECTURE) ---
+// --- LIVE OPERATIONS (OS-PUSH ARCHITECTURE) ---
 function openLiveModal() {
+  // Request OS Notification Permission as soon as they interact with Live Ops
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+
   document.getElementById('modalMaxBidText').innerText = formatCurrency(currentBestBid);
   document.getElementById('liveOpsModal').style.display = 'flex';
 }
@@ -502,10 +506,19 @@ function syncClocks() {
       // RED TRIPWIRE (Under 5 minutes / 300,000 ms)
       if (diff <= 300000) {
         cardEl.classList.add('critical-flash');
+        
         if (!mutedBanners[deal.id]) {
           triggerBanner = true;
           bannerName = deal.name;
-          mutedBanners[deal.id] = true; // Mark as alerted so banner stays down if dismissed
+          mutedBanners[deal.id] = true; 
+
+          // FIRE OS-LEVEL NOTIFICATION
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("🚨 J&B MATRIX ALERT", {
+              body: `${deal.name} is ending in under 5 minutes. Tap to open matrix.`,
+              requireInteraction: true
+            });
+          }
         }
       } else {
         cardEl.classList.remove('critical-flash');
@@ -516,7 +529,7 @@ function syncClocks() {
   if (triggerBanner) {
     document.getElementById('bannerText').innerText = bannerName + " is ending in under 5 minutes.";
     document.getElementById('pushBanner').classList.add('active');
-    // Auto hide banner after 10s if not clicked
+    // Auto hide in-app banner after 10s if not clicked
     setTimeout(dismissBanner, 10000);
   }
 }
