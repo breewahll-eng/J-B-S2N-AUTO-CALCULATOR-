@@ -8,11 +8,13 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
 <style>
   :root {
-    --primary: #00ffcc;
-    --dark: #0a0a0a;
-    --panel: #151515;
+    --primary: #00ffcc; /* Neon Cyan */
+    --danger: #ff3333;  /* Alert Red */
+    --dark: #070707;
+    --panel: #121212;
+    --card: #1a1a1a;
     --text: #e0e0e0;
-    --border: #333;
+    --border: #2a2a2a;
   }
   body {
     background-color: var(--dark);
@@ -25,159 +27,191 @@
     max-width: 480px;
     margin: 0 auto;
     background: var(--panel);
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     border: 1px solid var(--border);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.9);
   }
   h2 {
     color: var(--primary);
     text-align: center;
     text-transform: uppercase;
-    font-size: 20px;
-    margin-top: 0;
-    letter-spacing: 1px;
+    font-size: 22px;
+    margin: 5px 0 20px 0;
+    letter-spacing: 2px;
+    font-weight: 900;
   }
-  .input-group {
+  
+  /* Zone Architecture */
+  .zone {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
     margin-bottom: 15px;
   }
-  label {
-    display: block;
-    font-size: 13px;
-    color: #aaa;
-    margin-bottom: 5px;
+  .zone-title {
+    font-size: 11px;
     text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
   }
-  input, select {
-    width: 100%;
-    padding: 12px;
-    background: #000;
-    border: 1px solid var(--border);
-    color: #fff;
-    font-size: 16px;
-    border-radius: 6px;
-    box-sizing: border-box;
-  }
-  input:focus, select:focus {
-    border-color: var(--primary);
-    outline: none;
-  }
-  .highlight-input {
-    background: rgba(0, 255, 204, 0.05);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px dashed var(--primary);
-    margin-bottom: 20px;
-  }
-  .highlight-input input {
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    font-weight: bold;
-    font-size: 18px;
-  }
-  .results-box {
-    background: #000;
-    border: 1px solid var(--primary);
-    padding: 15px;
-    border-radius: 8px;
-  }
-  .result-row {
+  
+  /* Input Styling */
+  .input-group { margin-bottom: 12px; }
+  .input-group:last-child { margin-bottom: 0; }
+  label {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
-  .result-row.total {
-    border-top: 1px dashed var(--border);
-    padding-top: 10px;
-    font-weight: bold;
-    color: var(--primary);
-    font-size: 18px;
-  }
-  .btn {
-    display: block;
-    width: 100%;
-    background: var(--primary);
-    color: #000;
-    padding: 14px;
-    text-align: center;
-    font-weight: bold;
+    font-size: 12px;
+    color: #bbb;
+    margin-bottom: 6px;
     text-transform: uppercase;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 20px;
-    font-size: 16px;
+    font-weight: bold;
   }
+  input {
+    width: 100%;
+    padding: 14px;
+    background: #000;
+    border: 1px solid #333;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: 0.2s all;
+  }
+  input:focus { border-color: var(--primary); outline: none; }
+  
+  /* Specific Inputs */
+  input.readonly { color: #666; background: #0a0a0a; border-color: #1a1a1a; }
+  input.danger { border-color: var(--danger); color: var(--danger); background: rgba(255, 51, 51, 0.05); }
+  input.lynchpin { border: 1px solid var(--primary); color: var(--primary); font-size: 20px; background: rgba(0, 255, 204, 0.05); }
+  
+  /* Buttons */
+  .toggle-container { display: flex; gap: 10px; margin-bottom: 15px; }
+  .toggle-btn {
+    flex: 1; padding: 12px 5px; background: #000; border: 1px solid var(--border);
+    color: #666; border-radius: 6px; cursor: pointer; text-align: center; font-weight: bold; font-size: 14px;
+  }
+  .toggle-btn span { display: block; font-size: 10px; font-weight: normal; margin-top: 4px; }
+  .toggle-btn.active { background: rgba(0, 255, 204, 0.1); border-color: var(--primary); color: var(--primary); }
+  
+  .quick-btn {
+    background: #222; color: #aaa; border: 1px solid #444; border-radius: 4px; padding: 2px 8px; font-size: 10px; cursor: pointer; text-transform: uppercase;
+  }
+  .quick-btn:active { background: var(--primary); color: #000; }
+  
+  .btn-reset {
+    display: block; width: 100%; background: #222; color: #888; padding: 15px; text-align: center; font-weight: bold; text-transform: uppercase; border: 1px solid #333; border-radius: 6px; cursor: pointer; margin-top: 15px; font-size: 14px;
+  }
+  
+  /* Results Math */
+  .result-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #aaa; }
+  .result-row.total {
+    border-top: 1px dashed #444; padding-top: 15px; margin-top: 10px; align-items: center;
+  }
+  .result-row.total span:first-child { font-size: 16px; font-weight: bold; color: #fff; text-transform: uppercase; }
+  .result-row.total span:last-child { font-size: 32px; font-weight: 900; color: var(--primary); }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>J & B Autos Matrix</h2>
+  <h2>The Matrix</h2>
   
-  <div class="input-group">
-    <label>ABM Membership Level</label>
-    <select id="membership" onchange="calculateCurrentState()">
-      <option value="advanced">Advanced ($189/yr) - $349 or 5% Fee</option>
-      <option value="premium">Premium ($349/yr) - $150 or 4% Fee</option>
-    </select>
+  <div class="toggle-container">
+    <button id="btn-advanced" class="toggle-btn" onclick="setMembership('advanced')">ADVANCED<span>5% or $349</span></button>
+    <button id="btn-premium" class="toggle-btn active" onclick="setMembership('premium')">PREMIUM<span>4% or $150</span></button>
   </div>
 
-  <div class="input-group">
-    <label>Target Resale Price (WI)</label>
-    <input type="number" id="resale" value="6500" oninput="updateFromTop()">
-  </div>
-
-  <div class="input-group">
-    <label>Desired Profit Margin ($) [Auto-Adjusts]</label>
-    <input type="number" id="profit" value="2000" oninput="updateFromTop()">
-  </div>
-
-  <div class="input-group">
-    <label>Estimated Repairs & Parts</label>
-    <input type="number" id="repairs" value="800" oninput="updateFromTop()">
-  </div>
-
-  <div class="input-group">
-    <label>Freight / Hauler Cost</label>
-    <input type="number" id="freight" value="600" oninput="updateFromTop()">
-  </div>
-
-  <div class="input-group">
-    <label>Processing Fee (Fixed)</label>
-    <input type="number" id="processingFee" value="150" oninput="calculateCurrentState()">
-  </div>
-
-  <div class="highlight-input">
-    <label>Max Outlay (The Lynchpin)</label>
-    <input type="number" id="maxOutlayInput" value="0" oninput="updateFromOutlay()">
-  </div>
-
-  <div class="results-box">
-    <div class="result-row">
-      <span>Est. Copart Auction Fees:</span>
-      <span id="estAuctionFees">$0</span>
+  <!-- ZONE A: MARKET REALITY -->
+  <div class="zone zone-a">
+    <div class="zone-title">Zone A: Market Reality</div>
+    <div class="input-group">
+      <label>Target Resale Price (WI)</label>
+      <input type="number" id="resale" value="6500" oninput="updateFromTop()" onkeyup="updateFromTop()" onchange="updateFromTop()">
     </div>
-    <div class="result-row">
-      <span>ABM Broker Fee:</span>
-      <span id="brokerFeeDisplay">$0</span>
-    </div>
-    <div class="result-row">
-      <span>Verified Total Landed Cost:</span>
-      <span id="calcTotalOutlay">$0</span>
-    </div>
-    <div class="result-row total">
-      <span>Max Allowable Bid:</span>
-      <span id="maxBid">$0</span>
+    <div class="input-group">
+      <label>Desired Profit Margin</label>
+      <input type="number" id="profit" value="2000" oninput="updateFromTop()" onkeyup="updateFromTop()" onchange="updateFromTop()">
     </div>
   </div>
 
-  <button class="btn" onclick="window.location.reload()">Reset Matrix</button>
+  <!-- ZONE B: THE FRICTION -->
+  <div class="zone zone-b">
+    <div class="zone-title">Zone B: The Friction (Hard Costs)</div>
+    <div class="input-group">
+      <label>Estimated Repairs & Parts</label>
+      <input type="number" id="repairs" value="800" oninput="updateFromTop()" onkeyup="updateFromTop()" onchange="updateFromTop()">
+    </div>
+    <div class="input-group">
+      <label>
+        Freight / Hauler
+        <button class="quick-btn" onclick="setQuickFreight(600)">Set $600 Slot</button>
+      </label>
+      <input type="number" id="freight" value="600" oninput="updateFromTop()" onkeyup="updateFromTop()" onchange="updateFromTop()">
+    </div>
+    <div class="input-group" style="display: flex; gap: 10px;">
+      <div style="flex: 1;">
+        <label>Processing</label>
+        <input type="number" id="processingFee" class="readonly" value="150" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE C: EXECUTION -->
+  <div class="zone zone-c">
+    <div class="zone-title">Zone C: Execution (The Lynchpin)</div>
+    <div class="input-group">
+      <label style="color: var(--primary);">Max Total Outlay Allowed</label>
+      <input type="number" id="maxOutlayInput" class="lynchpin" value="0" oninput="updateFromOutlay()" onkeyup="updateFromOutlay()">
+    </div>
+
+    <div style="margin-top: 20px;">
+      <div class="result-row">
+        <span>Est. Auction/Gate Fees:</span>
+        <span id="estAuctionFees">$0</span>
+      </div>
+      <div class="result-row">
+        <span>ABM Broker Fee:</span>
+        <span id="brokerFeeDisplay">$0</span>
+      </div>
+      <div class="result-row">
+        <span>Verified Total Landed Cost:</span>
+        <span id="calcTotalOutlay">$0</span>
+      </div>
+      <div class="result-row total">
+        <span>Max Bid:</span>
+        <span id="maxBid">$0</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-reset" onclick="window.location.reload()">System Reset</button>
 </div>
 
 <script>
-// Hardcoded Copart Breakpoints
+// System State
+let activeMembership = 'premium';
+
+function setMembership(level) {
+  activeMembership = level;
+  document.getElementById('btn-advanced').classList.remove('active');
+  document.getElementById('btn-premium').classList.remove('active');
+  document.getElementById('btn-' + level).classList.add('active');
+  calculateCurrentState();
+}
+
+function setQuickFreight(amount) {
+  document.getElementById('freight').value = amount;
+  updateFromTop();
+}
+
+// Copart Breakpoints
 function getAuctionFees(bid) {
   if (bid <= 1500) return 628;
   if (bid <= 1800) return 678;
@@ -193,8 +227,19 @@ function getAuctionFees(bid) {
   return 3298; 
 }
 
-// Route 1: User edits Resale, Profit, Repairs, or Freight.
-// Action: Calculate and update the Max Outlay field.
+// Visual Tripwire for Margin Safety
+function checkProfitHealth() {
+  const profitInput = document.getElementById('profit');
+  const profitVal = parseFloat(profitInput.value) || 0;
+  
+  if (profitVal < 1000) {
+    profitInput.classList.add('danger');
+  } else {
+    profitInput.classList.remove('danger');
+  }
+}
+
+// Route 1: Top-Down Execution
 function updateFromTop() {
   const resale = parseFloat(document.getElementById('resale').value) || 0;
   const profit = parseFloat(document.getElementById('profit').value) || 0;
@@ -204,35 +249,33 @@ function updateFromTop() {
   const calculatedOutlay = resale - profit - repairs - freight;
   document.getElementById('maxOutlayInput').value = calculatedOutlay;
   
+  checkProfitHealth();
   executeBidMath(calculatedOutlay);
 }
 
-// Route 2: User manually edits the Max Outlay field.
-// Action: Reverse-engineer the equation to force Profit to absorb the change.
+// Route 2: Bottom-Up Reverse Engineering
 function updateFromOutlay() {
   const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
   const resale = parseFloat(document.getElementById('resale').value) || 0;
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
 
-  // Keep the board unified by adjusting the Profit margin
   const adjustedProfit = resale - outlay - repairs - freight;
   document.getElementById('profit').value = adjustedProfit;
 
+  checkProfitHealth();
   executeBidMath(outlay);
 }
 
-// Route 3: User edits Membership or Processing Fee. 
-// Action: Run the math on the current Outlay state without altering the top board.
+// Route 3: Toggle Shifts
 function calculateCurrentState() {
   const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
   executeBidMath(outlay);
 }
 
-// The Core Engine: Single dollar stepping to find the exact absolute limit.
+// Core Mathematical Engine
 function executeBidMath(maxOutlay) {
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
-  const membership = document.getElementById('membership').value;
   
   let bestBid = 0;
   let bestAuctionFees = 0;
@@ -243,7 +286,7 @@ function executeBidMath(maxOutlay) {
     let aFees = getAuctionFees(testBid);
     let bFee = 0;
     
-    if (membership === 'advanced') {
+    if (activeMembership === 'advanced') {
       bFee = Math.max(349, testBid * 0.05);
     } else {
       bFee = Math.max(150, testBid * 0.04);
@@ -261,14 +304,13 @@ function executeBidMath(maxOutlay) {
     }
   }
 
-  // Inject final numbers into the UI
   document.getElementById('estAuctionFees').innerText = '$' + bestAuctionFees.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('brokerFeeDisplay').innerText = '$' + bestBrokerFee.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('calcTotalOutlay').innerText = '$' + bestTotal.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('maxBid').innerText = '$' + bestBid.toLocaleString(undefined, {maximumFractionDigits: 0});
 }
 
-// Boot Sequence
+// Boot
 updateFromTop();
 </script>
 
