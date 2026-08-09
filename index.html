@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J & B Autos Matrix V1.4</title>
+<title>J & B Autos Matrix V1.5</title>
 <style>
   :root {
     --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
@@ -104,10 +104,6 @@
   #liveOpsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
   .modal-content { background: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 20px; }
   .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  
-  .checkbox-wrapper { display: flex; align-items: center; margin-top: 15px; padding: 10px; background: var(--accent-light); border: 1px solid #BFDBFE; border-radius: 8px; }
-  .checkbox-wrapper input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--accent); }
-  .checkbox-wrapper label { margin-bottom: 0; color: var(--accent); font-weight: 700; font-size: 12px; }
 
   /* Push Tripwire Alerts */
   @keyframes critical-pulse {
@@ -138,7 +134,7 @@
 </div>
 
 <div class="container">
-  <h2>J&B <span>MATRIX V1.4</span></h2>
+  <h2>J&B <span>MATRIX V1.5</span></h2>
 
   <!-- Master Exchange Routing -->
   <div class="master-selector">
@@ -256,7 +252,7 @@
     </div>
     
     <div class="input-group" style="margin-top: 10px;">
-      <label>Time Remaining</label>
+      <label>Time Remaining (Lock Timestamp)</label>
       <div class="modal-row">
         <div>
           <label style="font-size: 11px;">Hours</label>
@@ -267,11 +263,6 @@
           <input type="number" id="liveMins" value="15" style="padding-left:14px;">
         </div>
       </div>
-    </div>
-    
-    <div class="checkbox-wrapper">
-      <input type="checkbox" id="syncCalendar" checked>
-      <label for="syncCalendar">Set OS Alarm (Bypasses Sandbox limits)</label>
     </div>
     
     <div class="action-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
@@ -298,45 +289,6 @@ window.onload = function() {
   
   setInterval(syncClocks, 1000);
 };
-
-// --- CALENDAR OS BYPASS INJECTION ---
-function triggerOSAlarm(dealName, endTimeMs) {
-  const start = new Date(endTimeMs);
-  const end = new Date(endTimeMs + (15 * 60000)); // Arbitrary 15 min block for the calendar visual
-  
-  const pad = (n) => n < 10 ? '0' + n : n;
-  const formatDate = (d) => {
-    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + 
-           pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
-  };
-
-  // Compile the ICS payload. Note the VALARM block set for -PT5M (Minus 5 Minutes)
-  const icsData = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//J&B Autos Matrix//Live Ops//EN
-BEGIN:VEVENT
-UID:${Date.now()}@jbautos.matrix
-DTSTAMP:${formatDate(new Date())}
-DTSTART:${formatDate(start)}
-DTEND:${formatDate(end)}
-SUMMARY:🚨 MATRIX: ${dealName || 'Vehicle'} Closing
-DESCRIPTION:Your target vehicle auction is ending. Check the J&B Matrix.
-BEGIN:VALARM
-TRIGGER:-PT5M
-ACTION:DISPLAY
-DESCRIPTION:Auction ending in 5 minutes! Open Matrix!
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
-  const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-  const link = document.createElement('a');
-  link.href = window.URL.createObjectURL(blob);
-  link.setAttribute('download', `${(dealName || 'auction').replace(/\s+/g, '_')}_alert.ics`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 // --- CORE CALCULATOR LOGIC ---
 function switchExchange() {
@@ -420,7 +372,7 @@ function saveDeal() {
   setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
 }
 
-// --- LIVE OPERATIONS (OS-PUSH ARCHITECTURE & ACTIVE TRACKING) ---
+// --- LIVE OPERATIONS (PURE IN-APP VISUALS) ---
 function openLiveModal() {
   document.getElementById('modalMaxBidText').innerText = formatCurrency(currentBestBid);
   document.getElementById('liveOpsModal').style.display = 'flex';
@@ -435,15 +387,8 @@ function deployLiveBid() {
   const bin = parseFloat(document.getElementById('liveBin').value) || null;
   const hrs = parseInt(document.getElementById('liveHrs').value) || 0;
   const mins = parseInt(document.getElementById('liveMins').value) || 0;
-  const syncCal = document.getElementById('syncCalendar').checked;
   
   const endTimeMs = Date.now() + (hrs * 3600000) + (mins * 60000);
-  
-  if (syncCal && (hrs > 0 || mins >= 5)) {
-    triggerOSAlarm(name, endTimeMs);
-  } else if (syncCal && mins < 5) {
-    alert("Warning: Clock is under 5 minutes. Calendar alert will fire immediately or not at all.");
-  }
   
   const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, bidEntered: opening, binPrice: bin, endTime: endTimeMs, triggered: false };
   liveDeals.unshift(liveDeal);
@@ -488,6 +433,7 @@ function syncClocks() {
       display += m.toString().padStart(2, '0') + "m " + s.toString().padStart(2, '0') + "s";
       el.innerText = display;
 
+      // 5 Minute Tripwire
       if (diff <= 300000) {
         cardEl.classList.add('critical-flash');
         if (!deal.triggered) {
