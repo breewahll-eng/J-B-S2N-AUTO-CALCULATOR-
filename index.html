@@ -10,7 +10,7 @@
   :root {
     --bg: #F4F7F9;
     --surface: #FFFFFF;
-    --accent: #2563EB; /* Modern Indigo */
+    --accent: #2563EB; 
     --accent-light: #EFF6FF;
     --success: #059669;
     --danger: #DC2626;
@@ -46,7 +46,6 @@
   }
   h2 span { color: var(--accent); }
 
-  /* Segmented Control (iOS Style) */
   .membership-toggle {
     display: flex;
     background: #E5E7EB;
@@ -55,161 +54,78 @@
     margin-bottom: 24px;
   }
   .toggle-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    padding: 10px 0;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    flex: 1; background: transparent; border: none; color: var(--text-muted);
+    padding: 10px 0; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
   }
   .toggle-btn span { display: block; font-size: 11px; font-weight: 500; margin-top: 2px; }
-  .toggle-btn.active { 
-    background: var(--surface); 
-    color: var(--text-main); 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); 
-  }
+  .toggle-btn.active { background: var(--surface); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
 
-  /* Soft Floating Cards */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
   }
-  .card-header {
-    font-size: 13px;
-    color: var(--text-main);
-    font-weight: 700;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .card-header { font-size: 13px; color: var(--text-main); font-weight: 700; margin-bottom: 16px; text-transform: uppercase; }
 
-  /* Modern Inputs */
   .input-group { margin-bottom: 16px; }
   .input-group:last-child { margin-bottom: 0; }
-  label {
-    display: block;
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
+  label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+  
   .input-wrapper { position: relative; }
-  .input-wrapper::before {
-    content: '$';
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: 16px;
-    font-weight: 500;
+  .input-wrapper.currency::before {
+    content: '$'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 16px; font-weight: 500;
   }
-  input[type="number"] {
-    width: 100%;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    font-size: 18px;
-    font-weight: 600;
-    padding: 14px 14px 14px 34px;
-    border-radius: 10px;
-    box-sizing: border-box;
-    transition: all 0.2s;
-    -moz-appearance: textfield;
+  
+  input[type="text"], input[type="number"] {
+    width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+    color: var(--text-main); font-size: 18px; font-weight: 600; border-radius: 10px;
+    box-sizing: border-box; transition: all 0.2s;
   }
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  input[type="number"]:focus { 
-    border-color: var(--accent); 
-    outline: none; 
-    background: var(--surface); 
-    box-shadow: 0 0 0 3px var(--accent-light);
-  }
+  input[type="number"] { padding: 14px 14px 14px 34px; -moz-appearance: textfield; }
+  input[type="text"] { padding: 14px; font-size: 16px; }
+  
+  input:focus { border-color: var(--accent); outline: none; background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); }
   input[readonly] { color: var(--text-muted); background: #F3F4F6; }
   
-  .profit-input.danger { 
-    color: var(--danger); 
-    border-color: var(--danger); 
-    background: var(--danger-light); 
-  }
-  .profit-input.danger:focus {
-    box-shadow: 0 0 0 3px #FEE2E2;
-  }
+  .profit-input.danger { color: var(--danger); border-color: var(--danger); background: var(--danger-light); }
 
-  /* Quick Actions */
   .quick-set {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
+    background: var(--surface); border: 1px solid var(--border); color: var(--accent);
+    font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 12px; cursor: pointer;
   }
-  .quick-set:active { background: var(--accent-light); }
 
-  /* The Execution Card */
-  .execution-card { 
-    border: 2px solid var(--accent); 
-    background: var(--accent-light);
-  }
-  .lynchpin-input {
-    background: var(--surface) !important;
-    border-color: var(--accent) !important;
-    color: var(--accent) !important;
-  }
+  .execution-card { border: 2px solid var(--accent); background: var(--accent-light); }
+  .lynchpin-input { background: var(--surface) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
   
-  .result-line { 
-    display: flex; 
-    justify-content: space-between; 
-    font-size: 14px; 
-    margin-bottom: 12px; 
-    color: #4B5563; 
-  }
+  .result-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; color: #4B5563; }
   .result-line span:last-child { color: var(--text-main); font-weight: 600; }
   
-  .grand-total {
-    display: flex; justify-content: space-between; align-items: center;
-    border-top: 1px solid #BFDBFE; padding-top: 16px; margin-top: 12px;
-  }
+  .grand-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #BFDBFE; padding-top: 16px; margin-top: 12px; }
   .grand-total-label { font-size: 15px; font-weight: 700; color: var(--text-main); }
   .grand-total-value { font-size: 36px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
 
-  .math-breakdown {
-    margin-top: 16px;
-    font-size: 12px;
-    color: #60A5FA;
-    text-align: center;
-    font-weight: 500;
-  }
-
-  .reset-btn {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    color: var(--text-muted); padding: 16px; border-radius: 12px;
-    font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: 0.2s;
-  }
-  .reset-btn:active { background: #F3F4F6; }
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+  .btn-primary { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase; }
+  
+  /* Ledger Styles */
+  .ledger-section { margin-top: 30px; }
+  .ledger-title { font-size: 14px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 8px;}
+  .deal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .deal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .deal-name { font-weight: 700; font-size: 15px; color: var(--text-main); }
+  .deal-profit { font-weight: 700; color: var(--success); font-size: 14px; }
+  .deal-details { font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .deal-actions { display: flex; gap: 8px; }
+  .btn-copy { flex: 2; background: var(--accent-light); color: var(--accent); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-delete { flex: 1; background: var(--danger-light); color: var(--danger); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>J&B <span>Autos Matrix</span></h2>
+  <h2>J&B <span>MATRIX</span></h2>
   
   <div class="membership-toggle">
     <button id="btn-advanced" class="toggle-btn" onclick="setMembership('advanced')">Advanced<span>5% or $349</span></button>
@@ -217,14 +133,22 @@
   </div>
 
   <div class="card">
+    <div class="card-header">Target Acquisition</div>
+    <div class="input-group">
+      <label>Vehicle / Lot Identifier</label>
+      <div class="input-wrapper"><input type="text" id="vehicleName" placeholder="e.g. 2017 Chevy Box Truck" autocomplete="off"></div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-header">Market Reality</div>
     <div class="input-group">
       <label>Target Resale Price (WI)</label>
-      <div class="input-wrapper"><input type="number" id="resale" value="6500" oninput="updateFromTop()" onchange="updateFromTop()"></div>
+      <div class="input-wrapper currency"><input type="number" id="resale" value="6500" oninput="updateFromTop()"></div>
     </div>
     <div class="input-group">
       <label>Desired Profit Margin</label>
-      <div class="input-wrapper"><input type="number" id="profit" class="profit-input" value="2000" oninput="updateFromTop()" onchange="updateFromTop()"></div>
+      <div class="input-wrapper currency"><input type="number" id="profit" class="profit-input" value="2000" oninput="updateFromTop()"></div>
     </div>
   </div>
 
@@ -232,18 +156,18 @@
     <div class="card-header">Hard Costs & Friction</div>
     <div class="input-group">
       <label>Repairs & Parts</label>
-      <div class="input-wrapper"><input type="number" id="repairs" value="800" oninput="updateFromTop()" onchange="updateFromTop()"></div>
+      <div class="input-wrapper currency"><input type="number" id="repairs" value="800" oninput="updateFromTop()"></div>
     </div>
     <div class="input-group">
       <label style="display: flex; justify-content: space-between; align-items: center;">
         Freight / Hauler
         <button class="quick-set" onclick="setQuickFreight(600)">$600 SLOT</button>
       </label>
-      <div class="input-wrapper"><input type="number" id="freight" value="600" oninput="updateFromTop()" onchange="updateFromTop()"></div>
+      <div class="input-wrapper currency"><input type="number" id="freight" value="600" oninput="updateFromTop()"></div>
     </div>
     <div class="input-group">
       <label>Platform Processing Fee</label>
-      <div class="input-wrapper"><input type="number" id="processingFee" value="150" readonly></div>
+      <div class="input-wrapper currency"><input type="number" id="processingFee" value="150" readonly></div>
     </div>
   </div>
 
@@ -252,35 +176,44 @@
     
     <div class="input-group" style="margin-bottom: 24px;">
       <label style="color: var(--accent); font-weight: 700;">Max Total Outlay (Lynchpin)</label>
-      <div class="input-wrapper">
-        <input type="number" id="maxOutlayInput" class="lynchpin-input" value="0" oninput="updateFromOutlay()" onchange="updateFromOutlay()">
+      <div class="input-wrapper currency">
+        <input type="number" id="maxOutlayInput" class="lynchpin-input" value="0" oninput="updateFromOutlay()">
       </div>
-    </div>
-
-    <div class="result-line">
-      <span>Auction / Gate Fees</span>
-      <span id="estAuctionFees">$0</span>
-    </div>
-    <div class="result-line">
-      <span>ABM Broker Fee</span>
-      <span id="brokerFeeDisplay">$0</span>
     </div>
     
     <div class="grand-total">
       <span class="grand-total-label">Max Allowable Bid</span>
       <span class="grand-total-value" id="maxBid">$0</span>
     </div>
-
-    <div class="math-breakdown" id="mathBreakdown">
-      Bid ($0) + Auction ($0) + Broker ($0) + Proc ($0) = $0
-    </div>
   </div>
 
-  <button class="reset-btn" onclick="window.location.reload()">Reset Calculator</button>
+  <div class="action-grid">
+    <button class="btn-secondary" onclick="resetCalculator()">Clear Data</button>
+    <button class="btn-primary" onclick="saveDeal()">Save Deal</button>
+  </div>
+
+  <!-- THE LEDGER -->
+  <div class="ledger-section" id="ledger-container" style="display: none;">
+    <div class="ledger-title">Pipeline Ledger</div>
+    <div id="ledger-list"></div>
+  </div>
+
 </div>
 
 <script>
 let activeMembership = 'premium';
+let currentBestBid = 0;
+let currentTotalCost = 0;
+let savedDeals = [];
+
+// Initialize Ledger on Boot
+window.onload = function() {
+  if (localStorage.getItem('jb_deals')) {
+    savedDeals = JSON.parse(localStorage.getItem('jb_deals'));
+    renderLedger();
+  }
+  updateFromTop();
+};
 
 function setMembership(level) {
   activeMembership = level;
@@ -306,18 +239,14 @@ function getAuctionFees(bid) {
   if (bid <= 5000) return 1008;
   if (bid <= 7000) return 1338;
   if (bid <= 10000) return 1798;
-  if (bid <= 20000) return 3298;
   return 3298; 
 }
 
 function checkProfitHealth() {
   const profitInput = document.getElementById('profit');
   const profitVal = parseFloat(profitInput.value) || 0;
-  if (profitVal < 1000) {
-    profitInput.classList.add('danger');
-  } else {
-    profitInput.classList.remove('danger');
-  }
+  if (profitVal < 1000) { profitInput.classList.add('danger'); } 
+  else { profitInput.classList.remove('danger'); }
 }
 
 function updateFromTop() {
@@ -325,10 +254,8 @@ function updateFromTop() {
   const profit = parseFloat(document.getElementById('profit').value) || 0;
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
-
   const calculatedOutlay = resale - profit - repairs - freight;
   document.getElementById('maxOutlayInput').value = calculatedOutlay;
-  
   checkProfitHealth();
   executeBidMath(calculatedOutlay);
 }
@@ -338,17 +265,14 @@ function updateFromOutlay() {
   const resale = parseFloat(document.getElementById('resale').value) || 0;
   const repairs = parseFloat(document.getElementById('repairs').value) || 0;
   const freight = parseFloat(document.getElementById('freight').value) || 0;
-
   const adjustedProfit = resale - outlay - repairs - freight;
   document.getElementById('profit').value = adjustedProfit;
-
   checkProfitHealth();
   executeBidMath(outlay);
 }
 
 function calculateCurrentState() {
-  const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
-  executeBidMath(outlay);
+  executeBidMath(parseFloat(document.getElementById('maxOutlayInput').value) || 0);
 }
 
 function formatCurrency(num) {
@@ -357,11 +281,7 @@ function formatCurrency(num) {
 
 function executeBidMath(maxOutlay) {
   const processingFee = parseFloat(document.getElementById('processingFee').value) || 0;
-  
-  let bestBid = 0;
-  let bestAuctionFees = 0;
-  let bestBrokerFee = 0;
-  let bestTotal = 0;
+  let bestBid = 0; let bestTotal = 0;
 
   for (let testBid = 100; testBid <= 30000; testBid += 1) {
     let aFees = getAuctionFees(testBid);
@@ -370,23 +290,97 @@ function executeBidMath(maxOutlay) {
     
     if (totalCost <= maxOutlay) {
       bestBid = testBid;
-      bestAuctionFees = aFees;
-      bestBrokerFee = bFee;
       bestTotal = totalCost;
-    } else {
-      break; 
-    }
+    } else { break; }
   }
-
-  document.getElementById('estAuctionFees').innerText = formatCurrency(bestAuctionFees);
-  document.getElementById('brokerFeeDisplay').innerText = formatCurrency(bestBrokerFee);
+  currentBestBid = bestBid;
+  currentTotalCost = bestTotal;
   document.getElementById('maxBid').innerText = formatCurrency(bestBid);
-
-  document.getElementById('mathBreakdown').innerText = 
-    `Bid (${formatCurrency(bestBid)}) + Auction (${formatCurrency(bestAuctionFees)}) + Broker (${formatCurrency(bestBrokerFee)}) + Proc (${formatCurrency(processingFee)}) = ${formatCurrency(bestTotal)}`;
 }
 
-updateFromTop();
+function resetCalculator() {
+  document.getElementById('vehicleName').value = '';
+  document.getElementById('resale').value = 6500;
+  document.getElementById('profit').value = 2000;
+  document.getElementById('repairs').value = 800;
+  document.getElementById('freight').value = 600;
+  updateFromTop();
+}
+
+// LEDGER & EXPORT LOGIC
+function saveDeal() {
+  const name = document.getElementById('vehicleName').value || 'Unnamed Asset';
+  const bid = currentBestBid;
+  const profit = parseFloat(document.getElementById('profit').value) || 0;
+  const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
+  const resale = parseFloat(document.getElementById('resale').value) || 0;
+  
+  const deal = { id: Date.now(), name, bid, profit, outlay, resale, platform: 'AutoBidMaster (' + activeMembership + ')' };
+  
+  savedDeals.unshift(deal); // Add to top of list
+  localStorage.setItem('jb_deals', JSON.stringify(savedDeals));
+  renderLedger();
+  
+  // Visual feedback
+  const btn = document.querySelector('.btn-primary');
+  btn.innerText = "SAVED!";
+  btn.style.background = "var(--success)";
+  setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
+}
+
+function deleteDeal(id) {
+  savedDeals = savedDeals.filter(deal => deal.id !== id);
+  localStorage.setItem('jb_deals', JSON.stringify(savedDeals));
+  renderLedger();
+}
+
+function copyDeal(id) {
+  const deal = savedDeals.find(d => d.id === id);
+  if(!deal) return;
+  
+  const text = `TARGET: ${deal.name}\n` +
+               `PLATFORM: ${deal.platform}\n\n` +
+               `💰 Target Resale: ${formatCurrency(deal.resale)}\n` +
+               `🛑 MAX BID LIMIT: ${formatCurrency(deal.bid)}\n` +
+               `📉 Total Est. Outlay: ${formatCurrency(deal.outlay)}\n` +
+               `✅ PROJECTED PROFIT: ${formatCurrency(deal.profit)}\n\n` +
+               `- J&B Autos Matrix`;
+               
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Report copied to clipboard. Ready to send.");
+  });
+}
+
+function renderLedger() {
+  const container = document.getElementById('ledger-container');
+  const list = document.getElementById('ledger-list');
+  list.innerHTML = '';
+  
+  if (savedDeals.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'block';
+  savedDeals.forEach(deal => {
+    list.innerHTML += `
+      <div class="deal-card">
+        <div class="deal-header">
+          <span class="deal-name">${deal.name}</span>
+          <span class="deal-profit">+${formatCurrency(deal.profit)}</span>
+        </div>
+        <div class="deal-details">
+          <span>Max Bid: ${formatCurrency(deal.bid)}</span>
+          <span>Outlay: ${formatCurrency(deal.outlay)}</span>
+        </div>
+        <div class="deal-actions">
+          <button class="btn-copy" onclick="copyDeal(${deal.id})">Export Report</button>
+          <button class="btn-delete" onclick="deleteDeal(${deal.id})">Drop</button>
+        </div>
+      </div>
+    `;
+  });
+}
 </script>
 
 </body>
