@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J & B Autos Matrix V1.3</title>
+<title>J & B Autos Matrix V1.4</title>
 <style>
   :root {
     --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
@@ -104,6 +104,10 @@
   #liveOpsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
   .modal-content { background: var(--surface); width: 100%; max-width: 400px; border-radius: 16px; padding: 20px; }
   .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  
+  .checkbox-wrapper { display: flex; align-items: center; margin-top: 15px; padding: 10px; background: var(--accent-light); border: 1px solid #BFDBFE; border-radius: 8px; }
+  .checkbox-wrapper input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--accent); }
+  .checkbox-wrapper label { margin-bottom: 0; color: var(--accent); font-weight: 700; font-size: 12px; }
 
   /* Push Tripwire Alerts */
   @keyframes critical-pulse {
@@ -134,7 +138,7 @@
 </div>
 
 <div class="container">
-  <h2>J&B <span>MATRIX V1.3</span></h2>
+  <h2>J&B <span>MATRIX V1.4</span></h2>
 
   <!-- Master Exchange Routing -->
   <div class="master-selector">
@@ -252,7 +256,7 @@
     </div>
     
     <div class="input-group" style="margin-top: 10px;">
-      <label>Time Remaining (Lock Timestamp)</label>
+      <label>Time Remaining</label>
       <div class="modal-row">
         <div>
           <label style="font-size: 11px;">Hours</label>
@@ -263,6 +267,11 @@
           <input type="number" id="liveMins" value="15" style="padding-left:14px;">
         </div>
       </div>
+    </div>
+    
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="syncCalendar" checked>
+      <label for="syncCalendar">Set OS Alarm (Bypasses Sandbox limits)</label>
     </div>
     
     <div class="action-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
@@ -278,7 +287,6 @@ let currentBestBid = 0;
 let currentTotalCost = 0;
 let savedDeals = [];
 let liveDeals = [];
-let mutedBanners = {}; 
 
 window.onload = function() {
   if (localStorage.getItem('jb_deals')) savedDeals = JSON.parse(localStorage.getItem('jb_deals'));
@@ -288,23 +296,46 @@ window.onload = function() {
   renderLedger();
   renderLiveOps();
   
-  initBackgroundWorker();
+  setInterval(syncClocks, 1000);
 };
 
-// --- WEB WORKER (BACKGROUND THROTTLE BYPASS) ---
-function initBackgroundWorker() {
-  const workerCode = `
-    let interval;
-    self.onmessage = function(e) {
-      if (e.data === 'start') {
-        interval = setInterval(() => { postMessage('tick'); }, 1000);
-      }
-    };
-  `;
-  const blob = new Blob([workerCode], { type: 'application/javascript' });
-  const worker = new Worker(URL.createObjectURL(blob));
-  worker.onmessage = function() { syncClocks(); };
-  worker.postMessage('start');
+// --- CALENDAR OS BYPASS INJECTION ---
+function triggerOSAlarm(dealName, endTimeMs) {
+  const start = new Date(endTimeMs);
+  const end = new Date(endTimeMs + (15 * 60000)); // Arbitrary 15 min block for the calendar visual
+  
+  const pad = (n) => n < 10 ? '0' + n : n;
+  const formatDate = (d) => {
+    return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + 
+           pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
+  };
+
+  // Compile the ICS payload. Note the VALARM block set for -PT5M (Minus 5 Minutes)
+  const icsData = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//J&B Autos Matrix//Live Ops//EN
+BEGIN:VEVENT
+UID:${Date.now()}@jbautos.matrix
+DTSTAMP:${formatDate(new Date())}
+DTSTART:${formatDate(start)}
+DTEND:${formatDate(end)}
+SUMMARY:🚨 MATRIX: ${dealName || 'Vehicle'} Closing
+DESCRIPTION:Your target vehicle auction is ending. Check the J&B Matrix.
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:Auction ending in 5 minutes! Open Matrix!
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+
+  const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  link.setAttribute('download', `${(dealName || 'auction').replace(/\s+/g, '_')}_alert.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // --- CORE CALCULATOR LOGIC ---
@@ -323,44 +354,24 @@ function switchExchange() {
   calculateCurrentState();
 }
 
-function setMembership(level) {
-  activeMembership = level;
-  document.getElementById('btn-advanced').classList.remove('active');
-  document.getElementById('btn-premium').classList.remove('active');
-  document.getElementById('btn-' + level).classList.add('active');
-  calculateCurrentState();
-}
-
+function setMembership(level) { activeMembership = level; document.getElementById('btn-advanced').classList.remove('active'); document.getElementById('btn-premium').classList.remove('active'); document.getElementById('btn-' + level).classList.add('active'); calculateCurrentState(); }
 function setQuickFreight(amount) { document.getElementById('freight').value = amount; updateFromTop(); }
 function formatCurrency(num) { return '$' + num.toLocaleString('en-US', {maximumFractionDigits: 0}); }
-function checkProfitHealth() {
-  const profitInput = document.getElementById('profit');
-  if ((parseFloat(profitInput.value) || 0) < 1000) profitInput.classList.add('danger');
-  else profitInput.classList.remove('danger');
-}
+function checkProfitHealth() { const profitInput = document.getElementById('profit'); if ((parseFloat(profitInput.value) || 0) < 1000) profitInput.classList.add('danger'); else profitInput.classList.remove('danger'); }
 
 function updateFromTop() {
-  const resale = parseFloat(document.getElementById('resale').value) || 0;
-  const profit = parseFloat(document.getElementById('profit').value) || 0;
-  const repairs = parseFloat(document.getElementById('repairs').value) || 0;
-  const freight = parseFloat(document.getElementById('freight').value) || 0;
-  const outlay = resale - profit - repairs - freight;
-  document.getElementById('maxOutlayInput').value = outlay;
-  checkProfitHealth(); executeBidMath(outlay);
+  const resale = parseFloat(document.getElementById('resale').value) || 0; const profit = parseFloat(document.getElementById('profit').value) || 0;
+  const repairs = parseFloat(document.getElementById('repairs').value) || 0; const freight = parseFloat(document.getElementById('freight').value) || 0;
+  const outlay = resale - profit - repairs - freight; document.getElementById('maxOutlayInput').value = outlay; checkProfitHealth(); executeBidMath(outlay);
 }
-
 function updateFromOutlay() {
-  const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0;
-  const resale = parseFloat(document.getElementById('resale').value) || 0;
-  const repairs = parseFloat(document.getElementById('repairs').value) || 0;
-  const freight = parseFloat(document.getElementById('freight').value) || 0;
-  document.getElementById('profit').value = resale - outlay - repairs - freight;
-  checkProfitHealth(); executeBidMath(outlay);
+  const outlay = parseFloat(document.getElementById('maxOutlayInput').value) || 0; const resale = parseFloat(document.getElementById('resale').value) || 0;
+  const repairs = parseFloat(document.getElementById('repairs').value) || 0; const freight = parseFloat(document.getElementById('freight').value) || 0;
+  document.getElementById('profit').value = resale - outlay - repairs - freight; checkProfitHealth(); executeBidMath(outlay);
 }
-
 function calculateCurrentState() { executeBidMath(parseFloat(document.getElementById('maxOutlayInput').value) || 0); }
 
-// FEE BRACKETS (Minified for structure)
+// FEE BRACKETS (Minified)
 function getCopartNativeBuyerFee(bid) { if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<400)return 120;if(bid<500)return 160;if(bid<600)return 185;if(bid<700)return 210;if(bid<800)return 230;if(bid<900)return 250;if(bid<1000)return 275;if(bid<1200)return 325;if(bid<1300)return 350;if(bid<1400)return 365;if(bid<1500)return 380;if(bid<1600)return 390;if(bid<1700)return 410;if(bid<1800)return 420;if(bid<2000)return 440;if(bid<2400)return 470;if(bid<2500)return 480;if(bid<3000)return 500;if(bid<3500)return 600;if(bid<4000)return 675;if(bid<4500)return 710;if(bid<6000)return 750;if(bid<7500)return 800;if(bid<8000)return 815;if(bid<10000)return 840;if(bid<15000)return 850;return bid*0.0725; }
 function getCopartVirtualBidFee(bid) { if(bid<100)return 0;if(bid<500)return 39;if(bid<1000)return 49;if(bid<1500)return 69;if(bid<2000)return 70;if(bid<4000)return 89;if(bid<6000)return 99;if(bid<8000)return 119;return 129; }
 function getIaaBuyerFeeStandard(bid) { if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<300)return 130;if(bid<350)return 137.5;if(bid<400)return 145;if(bid<450)return 175;if(bid<500)return 185;if(bid<550)return 205;if(bid<600)return 210;if(bid<700)return 240;if(bid<800)return 270;if(bid<900)return 295;if(bid<1000)return 320;if(bid<1200)return 375;if(bid<1300)return 395;if(bid<1400)return 410;if(bid<1500)return 430;if(bid<1600)return 445;if(bid<1700)return 465;if(bid<1800)return 485;if(bid<2000)return 510;if(bid<2400)return 535;if(bid<2500)return 570;if(bid<3000)return 610;if(bid<3500)return 655;if(bid<4000)return 705;if(bid<4500)return 725;if(bid<5000)return 750;if(bid<5500)return 775;if(bid<6000)return 800;if(bid<6500)return 825;if(bid<7000)return 845;if(bid<7500)return 880;if(bid<8000)return 900;if(bid<8500)return 925;if(bid<10000)return 945;if(bid<15000)return 1000;return bid*0.075; }
@@ -376,26 +387,15 @@ function executeBidMath(maxOutlay) {
     let auctionFees = 0; let brokerFees = 0;
     switch(exchange) {
       case 'ABM':
-        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2500)auctionFees=718;
-        else if(testBid<=3450)auctionFees=848;else if(testBid<=3950)auctionFees=923;else if(testBid<=4000)auctionFees=968;
-        else if(testBid<=4500)auctionFees=1003;else if(testBid<=5000)auctionFees=1008;else if(testBid<=7000)auctionFees=1338;
-        else if(testBid<=10000)auctionFees=1798;else auctionFees=3298;
-        brokerFees = activeMembership === 'advanced' ? Math.max(349, testBid * 0.05) : Math.max(150, testBid * 0.04);
-        break;
+        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2500)auctionFees=718;else if(testBid<=3450)auctionFees=848;else if(testBid<=3950)auctionFees=923;else if(testBid<=4000)auctionFees=968;else if(testBid<=4500)auctionFees=1003;else if(testBid<=5000)auctionFees=1008;else if(testBid<=7000)auctionFees=1338;else if(testBid<=10000)auctionFees=1798;else auctionFees=3298;
+        brokerFees = activeMembership === 'advanced' ? Math.max(349, testBid * 0.05) : Math.max(150, testBid * 0.04); break;
       case 'ABB':
-        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2600)auctionFees=798;
-        else if(testBid<=3000)auctionFees=898;else if(testBid<=5000)auctionFees=1058;else if(testBid<=6500)auctionFees=1138;
-        else if(testBid<=10000)auctionFees=1198;else auctionFees=3298;
-        brokerFees = testBid <= 5000 ? 349 : testBid * 0.09;
-        break;
-      case 'ADVANCE_MOTORS':
-        auctionFees = getCopartNativeBuyerFee(testBid) + getCopartVirtualBidFee(testBid); brokerFees = 350; break;
-      case 'COPART_NATIVE':
-        auctionFees = getCopartNativeBuyerFee(testBid); brokerFees = getCopartVirtualBidFee(testBid); break;
-      case 'IAA_STANDARD': case 'IAA_NON_LICENSED':
-        auctionFees = getIaaBuyerFeeStandard(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
-      case 'IAA_HIGH':
-        auctionFees = getIaaBuyerFeeHighVolume(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
+        if(testBid<=1500)auctionFees=628;else if(testBid<=1800)auctionFees=678;else if(testBid<=2600)auctionFees=798;else if(testBid<=3000)auctionFees=898;else if(testBid<=5000)auctionFees=1058;else if(testBid<=6500)auctionFees=1138;else if(testBid<=10000)auctionFees=1198;else auctionFees=3298;
+        brokerFees = testBid <= 5000 ? 349 : testBid * 0.09; break;
+      case 'ADVANCE_MOTORS': auctionFees = getCopartNativeBuyerFee(testBid) + getCopartVirtualBidFee(testBid); brokerFees = 350; break;
+      case 'COPART_NATIVE': auctionFees = getCopartNativeBuyerFee(testBid); brokerFees = getCopartVirtualBidFee(testBid); break;
+      case 'IAA_STANDARD': case 'IAA_NON_LICENSED': auctionFees = getIaaBuyerFeeStandard(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
+      case 'IAA_HIGH': auctionFees = getIaaBuyerFeeHighVolume(testBid); brokerFees = getIaaLiveBidFee(testBid); break;
     }
     let totalCost = testBid + auctionFees + brokerFees + processingFee;
     if (totalCost <= maxOutlay) { bestBid = testBid; bestTotal = totalCost; finalAuctionFees = auctionFees; finalBrokerFees = brokerFees; } 
@@ -408,11 +408,7 @@ function executeBidMath(maxOutlay) {
   document.getElementById('brokerFeeDisplay').innerText = formatCurrency(finalBrokerFees);
 }
 
-function resetCalculator() {
-  document.getElementById('vehicleName').value = ''; document.getElementById('resale').value = 6500;
-  document.getElementById('profit').value = 2000; document.getElementById('repairs').value = 800;
-  document.getElementById('freight').value = 600; updateFromTop();
-}
+function resetCalculator() { document.getElementById('vehicleName').value = ''; document.getElementById('resale').value = 6500; document.getElementById('profit').value = 2000; document.getElementById('repairs').value = 800; document.getElementById('freight').value = 600; updateFromTop(); }
 
 function saveDeal() {
   const name = document.getElementById('vehicleName').value || 'Unnamed Asset';
@@ -420,23 +416,17 @@ function saveDeal() {
   const deal = { id: Date.now(), name, bid: currentBestBid, profit: parseFloat(document.getElementById('profit').value) || 0, outlay: parseFloat(document.getElementById('maxOutlayInput').value) || 0, resale: parseFloat(document.getElementById('resale').value) || 0, platform: exchangeLabel };
   savedDeals.unshift(deal); localStorage.setItem('jb_deals', JSON.stringify(savedDeals)); renderLedger();
   
-  const btn = document.querySelector('.btn-primary');
-  btn.innerText = "SAVED!"; btn.style.background = "var(--success)";
+  const btn = document.querySelector('.btn-primary'); btn.innerText = "SAVED!"; btn.style.background = "var(--success)";
   setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
 }
 
 // --- LIVE OPERATIONS (OS-PUSH ARCHITECTURE & ACTIVE TRACKING) ---
 function openLiveModal() {
-  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-    Notification.requestPermission();
-  }
   document.getElementById('modalMaxBidText').innerText = formatCurrency(currentBestBid);
   document.getElementById('liveOpsModal').style.display = 'flex';
 }
 
-function closeLiveModal() {
-  document.getElementById('liveOpsModal').style.display = 'none';
-}
+function closeLiveModal() { document.getElementById('liveOpsModal').style.display = 'none'; }
 
 function deployLiveBid() {
   const name = document.getElementById('vehicleName').value || 'Unnamed Asset';
@@ -445,18 +435,22 @@ function deployLiveBid() {
   const bin = parseFloat(document.getElementById('liveBin').value) || null;
   const hrs = parseInt(document.getElementById('liveHrs').value) || 0;
   const mins = parseInt(document.getElementById('liveMins').value) || 0;
+  const syncCal = document.getElementById('syncCalendar').checked;
   
   const endTimeMs = Date.now() + (hrs * 3600000) + (mins * 60000);
   
-  const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, bidEntered: opening, binPrice: bin, endTime: endTimeMs };
+  if (syncCal && (hrs > 0 || mins >= 5)) {
+    triggerOSAlarm(name, endTimeMs);
+  } else if (syncCal && mins < 5) {
+    alert("Warning: Clock is under 5 minutes. Calendar alert will fire immediately or not at all.");
+  }
+  
+  const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, bidEntered: opening, binPrice: bin, endTime: endTimeMs, triggered: false };
   liveDeals.unshift(liveDeal);
   localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
   
-  closeLiveModal();
-  renderLiveOps();
-  
-  document.getElementById('liveHrs').value = "0";
-  document.getElementById('liveMins').value = "15";
+  closeLiveModal(); renderLiveOps();
+  document.getElementById('liveHrs').value = "0"; document.getElementById('liveMins').value = "15";
 }
 
 function updateInlineBid(id, newValue) {
@@ -464,13 +458,11 @@ function updateInlineBid(id, newValue) {
   if (dealIndex > -1) {
     liveDeals[dealIndex].bidEntered = parseFloat(newValue) || 0;
     localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
-    renderLiveOps(); // Force re-render to update the Amount Left immediately
+    renderLiveOps();
   }
 }
 
-function dismissBanner() {
-  document.getElementById('pushBanner').classList.remove('active');
-}
+function dismissBanner() { document.getElementById('pushBanner').classList.remove('active'); }
 
 function syncClocks() {
   if (liveDeals.length === 0) return;
@@ -478,6 +470,7 @@ function syncClocks() {
   const now = Date.now();
   let triggerBanner = false;
   let bannerName = "";
+  let needsStorageUpdate = false;
 
   liveDeals.forEach(deal => {
     const el = document.getElementById(`clock-${deal.id}`);
@@ -490,36 +483,24 @@ function syncClocks() {
       el.innerText = "AUCTION ENDED";
       cardEl.classList.remove('critical-flash');
     } else {
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      
-      let display = "";
-      if (h > 0) display += h + "h ";
+      const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); const s = Math.floor((diff % 60000) / 1000);
+      let display = ""; if (h > 0) display += h + "h ";
       display += m.toString().padStart(2, '0') + "m " + s.toString().padStart(2, '0') + "s";
       el.innerText = display;
 
       if (diff <= 300000) {
         cardEl.classList.add('critical-flash');
-        
-        if (!mutedBanners[deal.id]) {
+        if (!deal.triggered) {
           triggerBanner = true;
           bannerName = deal.name;
-          mutedBanners[deal.id] = true; 
-
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("🚨 J&B MATRIX ALERT", {
-              body: `${deal.name} is ending in under 5 minutes. Tap to open matrix.`,
-              requireInteraction: true
-            });
-          }
+          deal.triggered = true;
+          needsStorageUpdate = true;
         }
-      } else {
-        cardEl.classList.remove('critical-flash');
-      }
+      } else { cardEl.classList.remove('critical-flash'); }
     }
   });
 
+  if (needsStorageUpdate) { localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals)); }
   if (triggerBanner) {
     document.getElementById('bannerText').innerText = bannerName + " is ending in under 5 minutes.";
     document.getElementById('pushBanner').classList.add('active');
@@ -527,26 +508,17 @@ function syncClocks() {
   }
 }
 
-function removeLiveDeal(id) {
-  liveDeals = liveDeals.filter(d => d.id !== id);
-  localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
-  delete mutedBanners[id];
-  renderLiveOps();
-}
+function removeLiveDeal(id) { liveDeals = liveDeals.filter(d => d.id !== id); localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals)); renderLiveOps(); }
 
 function renderLiveOps() {
-  const container = document.getElementById('liveOps-container');
-  const list = document.getElementById('liveOps-list');
-  list.innerHTML = '';
-  if (liveDeals.length === 0) { container.style.display = 'none'; return; }
+  const container = document.getElementById('liveOps-container'); const list = document.getElementById('liveOps-list');
+  list.innerHTML = ''; if (liveDeals.length === 0) { container.style.display = 'none'; return; }
   
   container.style.display = 'block';
   liveDeals.forEach(deal => {
     let binHTML = deal.binPrice ? `<div class="bin-banner">Buy It Now Available: ${formatCurrency(deal.binPrice)}</div>` : ``;
-    
-    // Core Math
     let amountLeft = deal.maxBid - deal.bidEntered;
-    let leftClass = amountLeft < 0 ? "warning" : "left"; // Turns red if you exceed your max
+    let leftClass = amountLeft < 0 ? "warning" : "left";
 
     list.innerHTML += `
       <div class="item-card live-ops-card" id="liveCard-${deal.id}">
@@ -554,10 +526,8 @@ function renderLiveOps() {
           <span class="item-name">${deal.name}</span>
           <span class="item-exchange" style="margin-bottom:0; background:var(--warning-light); color:#B45309;">LIVE TRACKER</span>
         </div>
-        
         <div class="clock-display" id="clock-${deal.id}">--m --s</div>
         ${binHTML}
-        
         <div class="bid-metrics">
           <div>
             <div class="metric-label">Bid Entered</div>
@@ -566,7 +536,6 @@ function renderLiveOps() {
           <div><div class="metric-label">Max Allowable</div><div class="metric-val max">${formatCurrency(deal.maxBid)}</div></div>
           <div><div class="metric-label">Amount Left</div><div class="metric-val ${leftClass}">${formatCurrency(amountLeft)}</div></div>
         </div>
-        
         <div class="item-actions">
           <button class="btn-sm btn-sm-danger" onclick="removeLiveDeal(${deal.id})">Close Operation</button>
         </div>
@@ -578,10 +547,8 @@ function renderLiveOps() {
 
 // --- LEDGER LOGIC ---
 function renderLedger() {
-  const container = document.getElementById('ledger-container');
-  const list = document.getElementById('ledger-list');
-  list.innerHTML = '';
-  if (savedDeals.length === 0) { container.style.display = 'none'; return; }
+  const container = document.getElementById('ledger-container'); const list = document.getElementById('ledger-list');
+  list.innerHTML = ''; if (savedDeals.length === 0) { container.style.display = 'none'; return; }
   
   container.style.display = 'block';
   savedDeals.forEach(deal => {
