@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J & B Autos Matrix V1.2</title>
+<title>J & B Autos Matrix V1.3</title>
 <style>
   :root {
     --bg: #F4F7F9; --surface: #FFFFFF; --accent: #2563EB; --accent-light: #EFF6FF;
@@ -89,10 +89,16 @@
   /* Live Ops Specifics */
   .live-ops-card { border-left: 4px solid var(--warning); position: relative; overflow: hidden; }
   .clock-display { font-size: 24px; font-weight: 800; color: var(--text-main); text-align: center; margin: 10px 0; padding: 10px; background: var(--input-bg); border-radius: 8px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
-  .bid-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; background: #F3F4F6; padding: 8px; border-radius: 8px; margin-bottom: 10px; }
-  .metric-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-  .metric-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
-  .metric-val.max { color: var(--accent); }
+  .bid-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; background: #F3F4F6; padding: 12px 8px; border-radius: 8px; margin-bottom: 10px; align-items: center;}
+  .metric-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .metric-val { font-size: 14px; font-weight: 800; color: var(--text-main); }
+  .metric-val.max { color: var(--text-main); }
+  .metric-val.left { color: var(--success); }
+  .metric-val.warning { color: var(--danger); }
+  
+  .inline-bid-input { width: 100%; max-width: 80px; text-align: center; padding: 4px; font-size: 14px; font-weight: 800; color: var(--accent); background: var(--surface); border: 2px solid var(--accent); border-radius: 6px; outline: none; }
+  .inline-bid-input:focus { border-color: var(--warning); }
+  .bin-banner { font-size: 11px; font-weight: 700; color: var(--success); text-align: center; margin-top: -5px; margin-bottom: 10px; text-transform: uppercase;}
 
   /* Modal Setup */
   #liveOpsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; padding: 20px; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
@@ -128,7 +134,7 @@
 </div>
 
 <div class="container">
-  <h2>J&B <span>MATRIX V1.2</span></h2>
+  <h2>J&B <span>MATRIX V1.3</span></h2>
 
   <!-- Master Exchange Routing -->
   <div class="master-selector">
@@ -236,7 +242,7 @@
     
     <div class="modal-row">
       <div class="input-group">
-        <label>Opening / Current Bid</label>
+        <label>Bid Entered</label>
         <div class="input-wrapper currency"><input type="number" id="liveOpening" value="0"></div>
       </div>
       <div class="input-group">
@@ -272,8 +278,7 @@ let currentBestBid = 0;
 let currentTotalCost = 0;
 let savedDeals = [];
 let liveDeals = [];
-let clockInterval;
-let mutedBanners = {}; // Prevent banner spam for same ID
+let mutedBanners = {}; 
 
 window.onload = function() {
   if (localStorage.getItem('jb_deals')) savedDeals = JSON.parse(localStorage.getItem('jb_deals'));
@@ -283,10 +288,26 @@ window.onload = function() {
   renderLedger();
   renderLiveOps();
   
-  clockInterval = setInterval(syncClocks, 1000);
+  initBackgroundWorker();
 };
 
-// --- CORE CALCULATOR LOGIC (PRESERVED) ---
+// --- WEB WORKER (BACKGROUND THROTTLE BYPASS) ---
+function initBackgroundWorker() {
+  const workerCode = `
+    let interval;
+    self.onmessage = function(e) {
+      if (e.data === 'start') {
+        interval = setInterval(() => { postMessage('tick'); }, 1000);
+      }
+    };
+  `;
+  const blob = new Blob([workerCode], { type: 'application/javascript' });
+  const worker = new Worker(URL.createObjectURL(blob));
+  worker.onmessage = function() { syncClocks(); };
+  worker.postMessage('start');
+}
+
+// --- CORE CALCULATOR LOGIC ---
 function switchExchange() {
   const exchange = document.getElementById('activeExchange').value;
   const abmToggles = document.getElementById('abm-toggles');
@@ -339,41 +360,12 @@ function updateFromOutlay() {
 
 function calculateCurrentState() { executeBidMath(parseFloat(document.getElementById('maxOutlayInput').value) || 0); }
 
-// FEE BRACKETS
-function getCopartNativeBuyerFee(bid) {
-  if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<400)return 120;if(bid<500)return 160;if(bid<600)return 185;
-  if(bid<700)return 210;if(bid<800)return 230;if(bid<900)return 250;if(bid<1000)return 275;if(bid<1200)return 325;if(bid<1300)return 350;
-  if(bid<1400)return 365;if(bid<1500)return 380;if(bid<1600)return 390;if(bid<1700)return 410;if(bid<1800)return 420;if(bid<2000)return 440;
-  if(bid<2400)return 470;if(bid<2500)return 480;if(bid<3000)return 500;if(bid<3500)return 600;if(bid<4000)return 675;if(bid<4500)return 710;
-  if(bid<6000)return 750;if(bid<7500)return 800;if(bid<8000)return 815;if(bid<10000)return 840;if(bid<15000)return 850;return bid*0.0725;
-}
-function getCopartVirtualBidFee(bid) {
-  if(bid<100)return 0;if(bid<500)return 39;if(bid<1000)return 49;if(bid<1500)return 69;if(bid<2000)return 70;
-  if(bid<4000)return 89;if(bid<6000)return 99;if(bid<8000)return 119;return 129;
-}
-function getIaaBuyerFeeStandard(bid) {
-  if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<300)return 130;if(bid<350)return 137.5;
-  if(bid<400)return 145;if(bid<450)return 175;if(bid<500)return 185;if(bid<550)return 205;if(bid<600)return 210;
-  if(bid<700)return 240;if(bid<800)return 270;if(bid<900)return 295;if(bid<1000)return 320;if(bid<1200)return 375;
-  if(bid<1300)return 395;if(bid<1400)return 410;if(bid<1500)return 430;if(bid<1600)return 445;if(bid<1700)return 465;
-  if(bid<1800)return 485;if(bid<2000)return 510;if(bid<2400)return 535;if(bid<2500)return 570;if(bid<3000)return 610;
-  if(bid<3500)return 655;if(bid<4000)return 705;if(bid<4500)return 725;if(bid<5000)return 750;if(bid<5500)return 775;
-  if(bid<6000)return 800;if(bid<6500)return 825;if(bid<7000)return 845;if(bid<7500)return 880;if(bid<8000)return 900;
-  if(bid<8500)return 925;if(bid<10000)return 945;if(bid<15000)return 1000;return bid*0.075;
-}
-function getIaaBuyerFeeHighVolume(bid) {
-  if(bid<100)return 1;if(bid<200)return 25;if(bid<300)return 60;if(bid<350)return 85;if(bid<400)return 100;if(bid<450)return 125;
-  if(bid<500)return 135;if(bid<550)return 145;if(bid<600)return 155;if(bid<700)return 170;if(bid<800)return 195;if(bid<900)return 215;
-  if(bid<1000)return 230;if(bid<1200)return 250;if(bid<1300)return 270;if(bid<1400)return 285;if(bid<1500)return 300;if(bid<1600)return 315;
-  if(bid<1700)return 330;if(bid<1800)return 350;if(bid<2000)return 370;if(bid<2400)return 390;if(bid<2500)return 425;if(bid<3000)return 460;
-  if(bid<3500)return 505;if(bid<4000)return 555;if(bid<4500)return 600;if(bid<5000)return 625;if(bid<5500)return 650;if(bid<6000)return 675;
-  if(bid<6500)return 700;if(bid<7000)return 720;if(bid<7500)return 755;if(bid<8000)return 775;if(bid<8500)return 800;if(bid<10000)return 820;
-  if(bid<11500)return 850;if(bid<12000)return 860;if(bid<12500)return 875;if(bid<15000)return 890;return bid*0.06;
-}
-function getIaaLiveBidFee(bid) {
-  if(bid<100)return 0;if(bid<500)return 50;if(bid<1000)return 65;if(bid<1500)return 85;
-  if(bid<2000)return 95;if(bid<4000)return 110;if(bid<6000)return 125;if(bid<8000)return 145;return 160;
-}
+// FEE BRACKETS (Minified for structure)
+function getCopartNativeBuyerFee(bid) { if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<400)return 120;if(bid<500)return 160;if(bid<600)return 185;if(bid<700)return 210;if(bid<800)return 230;if(bid<900)return 250;if(bid<1000)return 275;if(bid<1200)return 325;if(bid<1300)return 350;if(bid<1400)return 365;if(bid<1500)return 380;if(bid<1600)return 390;if(bid<1700)return 410;if(bid<1800)return 420;if(bid<2000)return 440;if(bid<2400)return 470;if(bid<2500)return 480;if(bid<3000)return 500;if(bid<3500)return 600;if(bid<4000)return 675;if(bid<4500)return 710;if(bid<6000)return 750;if(bid<7500)return 800;if(bid<8000)return 815;if(bid<10000)return 840;if(bid<15000)return 850;return bid*0.0725; }
+function getCopartVirtualBidFee(bid) { if(bid<100)return 0;if(bid<500)return 39;if(bid<1000)return 49;if(bid<1500)return 69;if(bid<2000)return 70;if(bid<4000)return 89;if(bid<6000)return 99;if(bid<8000)return 119;return 129; }
+function getIaaBuyerFeeStandard(bid) { if(bid<50)return 25;if(bid<100)return 45;if(bid<200)return 80;if(bid<300)return 130;if(bid<350)return 137.5;if(bid<400)return 145;if(bid<450)return 175;if(bid<500)return 185;if(bid<550)return 205;if(bid<600)return 210;if(bid<700)return 240;if(bid<800)return 270;if(bid<900)return 295;if(bid<1000)return 320;if(bid<1200)return 375;if(bid<1300)return 395;if(bid<1400)return 410;if(bid<1500)return 430;if(bid<1600)return 445;if(bid<1700)return 465;if(bid<1800)return 485;if(bid<2000)return 510;if(bid<2400)return 535;if(bid<2500)return 570;if(bid<3000)return 610;if(bid<3500)return 655;if(bid<4000)return 705;if(bid<4500)return 725;if(bid<5000)return 750;if(bid<5500)return 775;if(bid<6000)return 800;if(bid<6500)return 825;if(bid<7000)return 845;if(bid<7500)return 880;if(bid<8000)return 900;if(bid<8500)return 925;if(bid<10000)return 945;if(bid<15000)return 1000;return bid*0.075; }
+function getIaaBuyerFeeHighVolume(bid) { if(bid<100)return 1;if(bid<200)return 25;if(bid<300)return 60;if(bid<350)return 85;if(bid<400)return 100;if(bid<450)return 125;if(bid<500)return 135;if(bid<550)return 145;if(bid<600)return 155;if(bid<700)return 170;if(bid<800)return 195;if(bid<900)return 215;if(bid<1000)return 230;if(bid<1200)return 250;if(bid<1300)return 270;if(bid<1400)return 285;if(bid<1500)return 300;if(bid<1600)return 315;if(bid<1700)return 330;if(bid<1800)return 350;if(bid<2000)return 370;if(bid<2400)return 390;if(bid<2500)return 425;if(bid<3000)return 460;if(bid<3500)return 505;if(bid<4000)return 555;if(bid<4500)return 600;if(bid<5000)return 625;if(bid<5500)return 650;if(bid<6000)return 675;if(bid<6500)return 700;if(bid<7000)return 720;if(bid<7500)return 755;if(bid<8000)return 775;if(bid<8500)return 800;if(bid<10000)return 820;if(bid<11500)return 850;if(bid<12000)return 860;if(bid<12500)return 875;if(bid<15000)return 890;return bid*0.06; }
+function getIaaLiveBidFee(bid) { if(bid<100)return 0;if(bid<500)return 50;if(bid<1000)return 65;if(bid<1500)return 85;if(bid<2000)return 95;if(bid<4000)return 110;if(bid<6000)return 125;if(bid<8000)return 145;return 160; }
 
 function executeBidMath(maxOutlay) {
   const exchange = document.getElementById('activeExchange').value;
@@ -433,13 +425,11 @@ function saveDeal() {
   setTimeout(() => { btn.innerText = "Save Deal"; btn.style.background = "var(--accent)"; }, 1500);
 }
 
-// --- LIVE OPERATIONS (OS-PUSH ARCHITECTURE) ---
+// --- LIVE OPERATIONS (OS-PUSH ARCHITECTURE & ACTIVE TRACKING) ---
 function openLiveModal() {
-  // Request OS Notification Permission as soon as they interact with Live Ops
   if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
     Notification.requestPermission();
   }
-
   document.getElementById('modalMaxBidText').innerText = formatCurrency(currentBestBid);
   document.getElementById('liveOpsModal').style.display = 'flex';
 }
@@ -456,19 +446,26 @@ function deployLiveBid() {
   const hrs = parseInt(document.getElementById('liveHrs').value) || 0;
   const mins = parseInt(document.getElementById('liveMins').value) || 0;
   
-  // Create immutable timestamp
   const endTimeMs = Date.now() + (hrs * 3600000) + (mins * 60000);
   
-  const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, openingBid: opening, binPrice: bin, endTime: endTimeMs };
+  const liveDeal = { id: Date.now(), name, platform: exchangeLabel, maxBid: currentBestBid, bidEntered: opening, binPrice: bin, endTime: endTimeMs };
   liveDeals.unshift(liveDeal);
   localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
   
   closeLiveModal();
   renderLiveOps();
   
-  // Reset modal inputs
   document.getElementById('liveHrs').value = "0";
   document.getElementById('liveMins').value = "15";
+}
+
+function updateInlineBid(id, newValue) {
+  const dealIndex = liveDeals.findIndex(d => d.id === id);
+  if (dealIndex > -1) {
+    liveDeals[dealIndex].bidEntered = parseFloat(newValue) || 0;
+    localStorage.setItem('jb_live_deals', JSON.stringify(liveDeals));
+    renderLiveOps(); // Force re-render to update the Amount Left immediately
+  }
 }
 
 function dismissBanner() {
@@ -493,7 +490,6 @@ function syncClocks() {
       el.innerText = "AUCTION ENDED";
       cardEl.classList.remove('critical-flash');
     } else {
-      // Calculate HH:MM:SS
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -503,7 +499,6 @@ function syncClocks() {
       display += m.toString().padStart(2, '0') + "m " + s.toString().padStart(2, '0') + "s";
       el.innerText = display;
 
-      // RED TRIPWIRE (Under 5 minutes / 300,000 ms)
       if (diff <= 300000) {
         cardEl.classList.add('critical-flash');
         
@@ -512,7 +507,6 @@ function syncClocks() {
           bannerName = deal.name;
           mutedBanners[deal.id] = true; 
 
-          // FIRE OS-LEVEL NOTIFICATION
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification("🚨 J&B MATRIX ALERT", {
               body: `${deal.name} is ending in under 5 minutes. Tap to open matrix.`,
@@ -529,7 +523,6 @@ function syncClocks() {
   if (triggerBanner) {
     document.getElementById('bannerText').innerText = bannerName + " is ending in under 5 minutes.";
     document.getElementById('pushBanner').classList.add('active');
-    // Auto hide in-app banner after 10s if not clicked
     setTimeout(dismissBanner, 10000);
   }
 }
@@ -549,8 +542,12 @@ function renderLiveOps() {
   
   container.style.display = 'block';
   liveDeals.forEach(deal => {
-    let binHTML = deal.binPrice ? `<div style="text-align:center;"><div class="metric-label">Buy It Now</div><div class="metric-val" style="color:var(--success);">${formatCurrency(deal.binPrice)}</div></div>` : `<div></div>`;
+    let binHTML = deal.binPrice ? `<div class="bin-banner">Buy It Now Available: ${formatCurrency(deal.binPrice)}</div>` : ``;
     
+    // Core Math
+    let amountLeft = deal.maxBid - deal.bidEntered;
+    let leftClass = amountLeft < 0 ? "warning" : "left"; // Turns red if you exceed your max
+
     list.innerHTML += `
       <div class="item-card live-ops-card" id="liveCard-${deal.id}">
         <div class="item-header">
@@ -559,11 +556,15 @@ function renderLiveOps() {
         </div>
         
         <div class="clock-display" id="clock-${deal.id}">--m --s</div>
+        ${binHTML}
         
         <div class="bid-metrics">
-          <div><div class="metric-label">Current Bid</div><div class="metric-val">${formatCurrency(deal.openingBid)}</div></div>
-          <div><div class="metric-label">Your Max Bid</div><div class="metric-val max">${formatCurrency(deal.maxBid)}</div></div>
-          ${binHTML}
+          <div>
+            <div class="metric-label">Bid Entered</div>
+            <input type="number" class="inline-bid-input" value="${deal.bidEntered}" onchange="updateInlineBid(${deal.id}, this.value)" title="Update your bid on the fly">
+          </div>
+          <div><div class="metric-label">Max Allowable</div><div class="metric-val max">${formatCurrency(deal.maxBid)}</div></div>
+          <div><div class="metric-label">Amount Left</div><div class="metric-val ${leftClass}">${formatCurrency(amountLeft)}</div></div>
         </div>
         
         <div class="item-actions">
@@ -572,7 +573,7 @@ function renderLiveOps() {
       </div>
     `;
   });
-  syncClocks(); // force immediate UI update
+  syncClocks();
 }
 
 // --- LEDGER LOGIC ---
